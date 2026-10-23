@@ -26,6 +26,7 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 | 2 | `main.py` → Run | Optimierer sucht die besten Anordnungen, druckt Bewertung und Hinweise, speichert Grundrisse in `ausgabe/` |
 | 3 | `lernen.py` → Run | **Machine Learning:** du bewertest Vorschläge mit 0–10, das Modell lernt, welche Regeln dir wichtig sind |
 | 4 | `main.py` erneut | nutzt jetzt automatisch deine gelernten Gewichte (`meine_bewertungen.json`) |
+| ✨ | `zimmer_aus_foto.py` → Run | **Zimmer aus einem Foto vermessen** – keine Meter eintippen: Raummaße, Tür/Fenster, Möbelpositionen → Bewertung + Optimierung |
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
 | – | `regeln_exportieren.py` | schreibt die gesamte Regelbasis als `regelbasis.md` / `regelbasis.json` |
 
@@ -103,3 +104,23 @@ mehrere Schränke, Sitzkreis/Couchtisch/TV im Wohnzimmer, gerade Stuhlanzahl.
 **Grenzen:** Ein Foto ist 2D – Abstände, Blickwinkel zur Tür und die Chi-Bahn lassen sich nur schätzen.
 Die Hinweise sind deshalb als „bitte prüfen" formuliert; die genaue Prüfung macht der Grundriss-Teil.
 Tipp: Aus der Tür heraus mit Weitwinkel fotografieren, Raum hell. Mehrere Fotos (je eine Wand) liefern mehr.
+
+## ✨ Zimmer aus einem Foto vermessen (`zimmer_aus_foto.py`, Colab-Schritt 3A)
+
+Keine Meter-Eingabe nötig: **YOLOE** findet Möbel, Türen und Fenster (mit Umrissmasken),
+**Depth Anything V2 – Metric Indoor** schätzt für jedes Pixel die Entfernung in Metern.
+`fengshui/foto3d.py` macht daraus:
+
+1. 3D-Punktwolke (Brennweite aus den EXIF-Daten des Fotos)
+2. Boden per RANSAC → Kamerahöhe und Höhen aller Punkte
+3. Wände: Ausrichtung + Wandlinien → **Raumbreite und -tiefe**
+4. Möbel: Grundfläche, Höhe, Wand im Rücken; Türen/Fenster mit Position, Breite, Brüstung
+5. Maßstab-Check über die Türhöhe (2,0 m); optional eine bekannte Länge angeben (`--breite 3.6`)
+6. Ergebnis wird als `mein_zimmer.py` geschrieben → `main.py` bewertet deine **jetzige** Einrichtung und optimiert
+
+**Foto-Tipps:** aus einer Zimmerecke diagonal in die gegenüberliegende Ecke, Weitwinkel (0,5×),
+Brusthöhe, Handy gerade, Raum hell, Boden + mindestens zwei Wände sichtbar.
+
+**Genauigkeit:** im Test an einem gerenderten Zimmer (3,60 × 4,20 m) lagen Raummaße und Möbel
+bei ±5–10 cm; mit echten Fotos ist ±10–20 cm realistisch. Wände hinter der Kamera werden geschätzt,
+verdeckte Möbelrückseiten mit Standardmaßen ergänzt – Ergebnis kurz prüfen und bei Bedarf korrigieren.

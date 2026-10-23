@@ -630,8 +630,8 @@ def _c03(layout):
     raum = layout.raum
     fenster_p = [f.mitte(raum) for f in raum.fenster]
     for p in layout.finde("pflanze"):
-        d_f = min((g.abstand_punkt_rechteck(fp, p.rechteck) for fp in fenster_p), default=99)
-        if d_f > 1.0:
+        d_f = min((g.abstand_punkt_rechteck(fp, p.rechteck) for fp in fenster_p), default=None)
+        if d_f is not None and d_f > 1.0:
             bef.append(Befund(min(1.0, (d_f - 1.0) / 2), f"{p.name} steht {d_f:.1f} m vom Fenster (zu wenig Licht)", p.name))
         if raum.raumtyp in ("schlafzimmer", "gaestezimmer", "studio"):
             if not layout.bewohner.pflanzen_sind_freunde:

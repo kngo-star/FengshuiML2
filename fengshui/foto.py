@@ -100,6 +100,7 @@ class Erkennung:
     label: str          # Originallabel des Modells
     conf: float
     box: tuple[float, float, float, float]   # x1, y1, x2, y2 in Pixeln (y nach unten)
+    poly: Optional[list] = None               # Umriss [[x, y], …] in Pixeln (nur Segmentierungsmodelle wie YOLOE)
 
     def norm(self, w: int, h: int) -> tuple[float, float, float, float]:
         x1, y1, x2, y2 = self.box
@@ -151,7 +152,8 @@ def erkenne(bild: str, modell: str = "yoloe-11s-seg.pt", conf: float = 0.2,
     res = m.predict(bild, conf=conf, verbose=False)[0]
     h, w = res.orig_shape
     erg: list[Erkennung] = []
-    for b in res.boxes:
+    polys = res.masks.xy if getattr(res, "masks", None) is not None else None
+    for i, b in enumerate(res.boxes):
         label = res.names[int(b.cls)]
         typ = zuordnung.get(label, label if label in STANDARD_MASSE else None)
         if typ is None:
@@ -159,7 +161,8 @@ def erkenne(bild: str, modell: str = "yoloe-11s-seg.pt", conf: float = 0.2,
         if float(b.conf) < max(conf, MIN_CONF.get(typ, 0.0)):
             continue
         x1, y1, x2, y2 = (float(v) for v in b.xyxy[0].tolist())
-        erg.append(Erkennung(typ, label, float(b.conf), (x1, y1, x2, y2)))
+        poly = polys[i].round(1).tolist() if polys is not None and len(polys[i]) >= 3 else None
+        erg.append(Erkennung(typ, label, float(b.conf), (x1, y1, x2, y2), poly))
     return _dedupe(erg, iou_dedupe), (w, h)
 
 
@@ -189,7 +192,8 @@ def speichere_erkennungen(erk: list[Erkennung], groesse: tuple[int, int], pfad: 
 def lade_erkennungen(pfad: str) -> tuple[list[Erkennung], tuple[int, int]]:
     with open(pfad, encoding="utf-8") as f:
         d = json.load(f)
-    return [Erkennung(e["typ"], e["label"], e["conf"], tuple(e["box"])) for e in d["erkennungen"]], tuple(d["groesse"])
+    return [Erkennung(e["typ"], e["label"], e["conf"], tuple(e["box"]), e.get("poly"))
+            for e in d["erkennungen"]], tuple(d["groesse"])
 
 
 # ------------------------------------------------------------------ Bild-Geometrie (normiert 0..1, y nach unten)
