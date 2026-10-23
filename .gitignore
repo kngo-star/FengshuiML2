@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# PyCharm
+.idea/
+
+# Modellgewichte (werden beim Start automatisch heruntergeladen, sind groß)
+*.pt
+*.ts
+
+# Persönliche Daten – nicht öffentlich hochladen
+mein_zimmer.jpg
+*.jpg
+*.jpeg
+*.png
+!ausgabe/alle_varianten.png
+meine_bewertungen.json
+ausgabe/erkennungen.json

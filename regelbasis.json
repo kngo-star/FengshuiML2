@@ -1,0 +1,719 @@
+{
+  "regeln": [
+    {
+      "id": "H01",
+      "titel": "Keine Überlappung",
+      "beschreibung": "Möbel dürfen sich nicht überschneiden.",
+      "quelle": "praktisch",
+      "kategorie": "hart",
+      "gewicht": 10.0,
+      "raumtypen": null
+    },
+    {
+      "id": "H02",
+      "titel": "Alles im Raum",
+      "beschreibung": "Möbel müssen vollständig im Raum stehen.",
+      "quelle": "praktisch",
+      "kategorie": "hart",
+      "gewicht": 10.0,
+      "raumtypen": null
+    },
+    {
+      "id": "H03",
+      "titel": "Türen gehen frei auf",
+      "beschreibung": "Türen sollen nach innen öffnen und dürfen nicht verstellt sein – blockierte Türen stehen für einen blockierten Zugang zur Welt.",
+      "quelle": "Kap. 4 Eingang / Kap. 5 Unordnung",
+      "kategorie": "hart",
+      "gewicht": 8.0,
+      "raumtypen": null
+    },
+    {
+      "id": "H04",
+      "titel": "Laufwege frei (≥ 60 cm)",
+      "beschreibung": "Freier Weg von der Tür zum Bett (beide Seiten bei Paaren), zum Schreibtischstuhl, zum Sofa, zu Schränken. Kein Durchquetschen.",
+      "quelle": "Kap. 4 Büro/Schlafzimmer, Kap. 5",
+      "kategorie": "hart",
+      "gewicht": 6.0,
+      "raumtypen": null
+    },
+    {
+      "id": "H05",
+      "titel": "Platz für den Schreibtischstuhl",
+      "beschreibung": "Hinter dem Schreibtisch braucht es ca. 70 cm freie Fläche für Stuhl und Person.",
+      "quelle": "praktisch",
+      "kategorie": "hart",
+      "gewicht": 6.0,
+      "raumtypen": null
+    },
+    {
+      "id": "H06",
+      "titel": "Schränke zugänglich",
+      "beschreibung": "Vor Schrank-/Kommodenfronten 60 cm frei lassen.",
+      "quelle": "praktisch",
+      "kategorie": "hart",
+      "gewicht": 4.0,
+      "raumtypen": null
+    },
+    {
+      "id": "H07",
+      "titel": "Wandobjekte nicht auf Türen/Fenstern",
+      "beschreibung": "Spiegel, Bilder, Wandregale brauchen eine echte Wandfläche.",
+      "quelle": "praktisch",
+      "kategorie": "hart",
+      "gewicht": 6.0,
+      "raumtypen": null
+    },
+    {
+      "id": "K01",
+      "titel": "Schildkröte: feste Wand im Rücken",
+      "beschreibung": "Bett mit Kopfteil an eine massive Wand, Sofa mit Rücken zur Wand (sonst niedrige Konsole dahinter), am Schreibtisch eine Wand hinter dir. Nicht frei im Raum schweben lassen.",
+      "quelle": "Kap. 2 Fünf Tiere, Kap. 3 Kommandoposition, Kap. 4",
+      "kategorie": "kommando",
+      "gewicht": 3.0,
+      "raumtypen": null
+    },
+    {
+      "id": "K02",
+      "titel": "Kein Fenster im Rücken",
+      "beschreibung": "Nicht mit dem Rücken/Kopfteil an ein Fenster – besonders nicht an eines, das tiefer als die Hüfte reicht. Wenn unvermeidbar: Fensterbank höher als das Kopfteil, massives Kopfteil, schwere Vorhänge.",
+      "quelle": "Kap. 3 Kommandoposition, Kap. 4 Schlafzimmer/Büro",
+      "kategorie": "kommando",
+      "gewicht": 2.5,
+      "raumtypen": null
+    },
+    {
+      "id": "K03",
+      "titel": "Tür im Blick",
+      "beschreibung": "Von Bett, Sofa und Schreibtisch aus soll man die Zimmertür sehen, ohne sich umzudrehen. Am Schreibtisch ist seitlich zur Tür noch ok – aber nie mit dem Rücken zur Tür.",
+      "quelle": "Kap. 3 Café-Technik, Kap. 4 Sofa/Büro/Schlafzimmer",
+      "kategorie": "kommando",
+      "gewicht": 3.0,
+      "raumtypen": null
+    },
+    {
+      "id": "K04",
+      "titel": "Füße nicht zur Tür (Sargposition)",
+      "beschreibung": "Das Bett nie so stellen, dass die Füße direkt in Linie zur Tür zeigen. Notlösung: Paravent oder schweres Möbel am Fußende.",
+      "quelle": "Kap. 4 Schlafzimmer – Bett und Chi",
+      "kategorie": "kommando",
+      "gewicht": 3.0,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "K05",
+      "titel": "Füße nicht zum großen Fenster",
+      "beschreibung": "Füße Richtung Fenster erzeugt viel Bewegungs-Chi; bei kleinen Fenstern/ruhigem Ausblick ok.",
+      "quelle": "Kap. 4 Schlafzimmer",
+      "kategorie": "chi",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "K06",
+      "titel": "Abstand zur Tür",
+      "beschreibung": "Bett so weit wie möglich von der Tür entfernt; am Schreibtisch nicht zu nah an der Tür sitzen (durch die Tür kommt das Chi herein).",
+      "quelle": "Kap. 4 Schlafzimmer/Büro",
+      "kategorie": "chi",
+      "gewicht": 2.0,
+      "raumtypen": null
+    },
+    {
+      "id": "K07",
+      "titel": "Bett nicht an der Türwand",
+      "beschreibung": "Steht das Bett an derselben Wand wie die Tür, kann man die Tür nicht überblicken.",
+      "quelle": "Kap. 4 Schlafzimmer – Kommandoposition",
+      "kategorie": "kommando",
+      "gewicht": 1.5,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "K08",
+      "titel": "Keine Balken / Schweres über dir",
+      "beschreibung": "Nicht unter Deckenbalken, schweren Lampen, Ventilatoren schlafen oder sitzen – sie wirken wie Klingen. Kein Balken darf quer über das Bett laufen.",
+      "quelle": "Kap. 2 Chi (Sha), Kap. 3 Kronleuchter, Kap. 4",
+      "kategorie": "chi",
+      "gewicht": 2.5,
+      "raumtypen": null
+    },
+    {
+      "id": "K09",
+      "titel": "Dachschräge: Kopf auf der hohen Seite",
+      "beschreibung": "Bett an das höhere Ende der Schräge, ausgeglichen (nicht eine Seite tiefer). Sofa nicht unter das niedrige Ende.",
+      "quelle": "Kap. 4 Schlafzimmer/Wohnzimmer",
+      "kategorie": "chi",
+      "gewicht": 2.0,
+      "raumtypen": null
+    },
+    {
+      "id": "K10",
+      "titel": "Bett von beiden Seiten zugänglich",
+      "beschreibung": "Bei Paaren immer von beiden Seiten einsteigen können. Für Singles bedeutet es Offenheit für einen Partner; Bett mit Längsseite an der Wand ist nicht falsch, aber eher für 'glückliche Singles'.",
+      "quelle": "Kap. 4 Schlafzimmer",
+      "kategorie": "kommando",
+      "gewicht": 1.5,
+      "raumtypen": [
+        "gaestezimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "K11",
+      "titel": "Kinderbett mit Längsseite an der Wand",
+      "beschreibung": "Im Kinderzimmer gibt eine Längsseite an der Wand dem Kind mehr Geborgenheit.",
+      "quelle": "Kap. 4 Kinderzimmer",
+      "kategorie": "kommando",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "kinderzimmer"
+      ]
+    },
+    {
+      "id": "K12",
+      "titel": "Vogel: Freiraum vor dir",
+      "beschreibung": "Vor Bett und Sofa braucht es offenen Raum (nicht beengt). Am Schreibtisch nicht direkt gegen die Wand starren – außer bei vielen Bildschirmen (dann zur Wand, aber Tür sehen).",
+      "quelle": "Kap. 2 Fünf Tiere (Vogel), Kap. 4",
+      "kategorie": "kommando",
+      "gewicht": 1.5,
+      "raumtypen": null
+    },
+    {
+      "id": "K13",
+      "titel": "Schreibtisch: Fenster seitlich",
+      "beschreibung": "Ideal ist das Fenster seitlich (gleichmäßiges Licht). Blick ins Fenster lenkt ab und blendet; Fenster im Rücken = Gefühl, beobachtet zu werden (siehe K02).",
+      "quelle": "Kap. 4 Büro – Schreibtisch",
+      "kategorie": "kommando",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "buero",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "K14",
+      "titel": "Keine spitzen Ecken auf dich gerichtet",
+      "beschreibung": "Ecken von Schränken, Tischen, Kommoden erzeugen 'tötendes' Sha-Chi. Keine Möbelecken nahe Bett/Kopf oder Sitzplatz; Ecken mit Möbeln füllen oder mit Pflanzen abmildern; runde/niedrige Nachttische.",
+      "quelle": "Kap. 2 Chi (Sha), Kap. 4",
+      "kategorie": "chi",
+      "gewicht": 1.5,
+      "raumtypen": null
+    },
+    {
+      "id": "K15",
+      "titel": "Langer Raum: Möbel quer stellen",
+      "beschreibung": "In langen Räumen fließt das Chi zu schnell. Möbel (auch das Bett) quer zur Längsachse stellen; Bett nicht ungeschützt am Ende des Raums.",
+      "quelle": "Kap. 4 Wohnzimmer/Schlafzimmer – lange Räume",
+      "kategorie": "chi",
+      "gewicht": 1.0,
+      "raumtypen": null
+    },
+    {
+      "id": "K16",
+      "titel": "Bett zentral & symmetrisch",
+      "beschreibung": "Das Bett symmetrisch platzieren, mittig an seiner Wand – ein zentral stehendes Bett verankert den Raum.",
+      "quelle": "Kap. 4 Schlafzimmer – Gefühl und Plan",
+      "kategorie": "stil",
+      "gewicht": 0.6,
+      "raumtypen": [
+        "gaestezimmer",
+        "schlafzimmer"
+      ]
+    },
+    {
+      "id": "C01",
+      "titel": "Nicht in der Chi-Bahn Tür ↔ Fenster",
+      "beschreibung": "Chi fließt von der Tür zum Fenster (gegenüberliegend = schnell durchschneidend). Bett, Sofa und Arbeitsplatz gehören in die ruhige Zone abseits dieser Bahn.",
+      "quelle": "Kap. 2 Chi-Fluss, Kap. 3 Grundriss-Übung",
+      "kategorie": "chi",
+      "gewicht": 2.0,
+      "raumtypen": null
+    },
+    {
+      "id": "C02",
+      "titel": "Spiegel richtig platzieren",
+      "beschreibung": "Spiegel wirken wie Türen/Fenster. Im Schlafzimmer vermeiden; wenn doch, nicht vom Bett aus sichtbar und nie am Fußende. Nie direkt gegenüber der Eingangstür. Kein Spiegel hinter dem Arbeitsplatz.",
+      "quelle": "Kap. 5 Spiegel, Kap. 4",
+      "kategorie": "chi",
+      "gewicht": 2.0,
+      "raumtypen": null
+    },
+    {
+      "id": "C03",
+      "titel": "Pflanzen: Licht ja, Bett nein",
+      "beschreibung": "Pflanzen brauchen Licht (nahe Fenster, in Gruppen). Im Schlafzimmer möglichst keine – wenn doch, als Gruppe direkt am Fenster und das Bett so weit wie möglich davon entfernt.",
+      "quelle": "Kap. 5 Zimmerpflanzen",
+      "kategorie": "stil",
+      "gewicht": 1.0,
+      "raumtypen": null
+    },
+    {
+      "id": "C04",
+      "titel": "Keine Bildschirme im Schlafzimmer",
+      "beschreibung": "Fernseher, Computer (und sogar Smartphones) gehören nicht ins Schlafzimmer. Glänzende schwarze Flächen wirken zudem wie Spiegel.",
+      "quelle": "Kap. 4 Schlafzimmer, Kap. 5 Spiegel",
+      "kategorie": "zonen",
+      "gewicht": 1.5,
+      "raumtypen": [
+        "gaestezimmer",
+        "schlafzimmer"
+      ]
+    },
+    {
+      "id": "C05",
+      "titel": "Zonen: Arbeiten vorn, Schlafen hinten",
+      "beschreibung": "Schlaf- und Arbeitsbereich klar trennen. Arbeitsbereich näher zur Tür und im helleren (Yang-)Teil, Schlafbereich im hinteren, ruhigen Teil. Um das Bett eine reine Ruhezone.",
+      "quelle": "Kap. 4 Gemeinsame Räume – Schlafzimmer und Arbeiten",
+      "kategorie": "zonen",
+      "gewicht": 1.5,
+      "raumtypen": null
+    },
+    {
+      "id": "C06",
+      "titel": "Kein Wasser/Aquarium/Drache im Schlafzimmer",
+      "beschreibung": "Aquarien, Brunnen und Drachenmotive bringen viel Yang – nicht ins Schlafzimmer.",
+      "quelle": "Kap. 4 Schlafzimmer, Kap. 5 Wasser/Objekte",
+      "kategorie": "zonen",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "gaestezimmer",
+        "schlafzimmer"
+      ]
+    },
+    {
+      "id": "C07",
+      "titel": "Altbau: Bett nicht an die Außenwand",
+      "beschreibung": "In älteren Gebäuden Temperaturschwankungen der Außenwand meiden (Neubau egal).",
+      "quelle": "Kap. 4 Schlafzimmer – Außenwand",
+      "kategorie": "chi",
+      "gewicht": 0.6,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "S01",
+      "titel": "Nichts Schweres über dem Kopfteil",
+      "beschreibung": "Nie Regale oder Wandmöbel über dem Bett; keine schweren (Glas-)Bilder über dem Bett – leichte Textilien oder Wandbilder sind ok. Keine überhängenden Regale über dem Schreibtisch.",
+      "quelle": "Kap. 4 Schlafzimmer – Kunst/Regale, Büro",
+      "kategorie": "stil",
+      "gewicht": 2.0,
+      "raumtypen": null
+    },
+    {
+      "id": "S02",
+      "titel": "Untere-Drittel-Regel",
+      "beschreibung": "Stauraum gehört ins untere Drittel der Wand; obere zwei Drittel frei für Deko. Keine hohen offenen Bücherregale (offene Regale = aggressives Chi). Einbauschränke über die ganze Wand sind ok.",
+      "quelle": "Kap. 5 Eindrücke / Ordnung, Kap. 4 Büro",
+      "kategorie": "stil",
+      "gewicht": 0.8,
+      "raumtypen": null
+    },
+    {
+      "id": "S03",
+      "titel": "Fenster & Ausblick nicht verstellen",
+      "beschreibung": "Licht und Ausblick erhalten; hohe Möbel nicht vor Fenster und Balkontür stellen (Balkon nie abschneiden).",
+      "quelle": "Kap. 4 Eingang, Kap. 5 Balkone",
+      "kategorie": "chi",
+      "gewicht": 1.5,
+      "raumtypen": null
+    },
+    {
+      "id": "S04",
+      "titel": "Esstisch frei in der Raummitte",
+      "beschreibung": "Esstisch mittig, nie an die Wand (rundum Platz), gute Sicht zum Eingang, aber nicht im Weg.",
+      "quelle": "Kap. 4 Esszimmer",
+      "kategorie": "kommando",
+      "gewicht": 2.0,
+      "raumtypen": [
+        "esszimmer",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "S05",
+      "titel": "Fernseher nicht als Mittelpunkt",
+      "beschreibung": "TV vom Zentrum in eine Ecke rücken, möglichst niedrig, nicht über einen Kamin; nicht von der Tür aus als Erstes sichtbar. Das Gespräch hat Vorrang.",
+      "quelle": "Kap. 4 Wohnzimmer – Fernseher",
+      "kategorie": "stil",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "S06",
+      "titel": "Sitzkreis statt einsamer Stuhl",
+      "beschreibung": "Sessel ergänzen das Sofa zu einem geschlossenen sozialen Kreis und schauen zum Sofa – nicht alle Sitze in dieselbe Richtung. Ein einzelner Stuhl außerhalb des Kreises signalisiert einen unwillkommenen Gast.",
+      "quelle": "Kap. 4 Wohnzimmer – Sessel",
+      "kategorie": "stil",
+      "gewicht": 1.2,
+      "raumtypen": [
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "S07",
+      "titel": "Fernseher vom Sofa sichtbar, aber dezent",
+      "beschreibung": "Der TV soll vom Sofa aus nutzbar sein, aber nicht die Bühne beherrschen (siehe S05).",
+      "quelle": "Kap. 4 Wohnzimmer – Fernseher",
+      "kategorie": "stil",
+      "gewicht": 0.8,
+      "raumtypen": [
+        "studio",
+        "wohnzimmer"
+      ]
+    }
+  ],
+  "wissen": {
+    "elemente": {
+      "feuer": {
+        "yin_yang": "yang",
+        "farben": [
+          "rot",
+          "orange",
+          "tieforange"
+        ],
+        "form": "Dreieck / spitz",
+        "richtung": "S",
+        "jahreszeit": "Sommer",
+        "bewegung": "aufwärts",
+        "textur": "keine",
+        "bedeutung": "Energie, Leidenschaft",
+        "hinweis": "Sparsam einsetzen – kleine, kraftvolle Akzente. Ganze Wand rötlich? Dann entsättigen (Richtung Terrakotta). Zu viel Feuer stört den Schlaf."
+      },
+      "erde": {
+        "yin_yang": "ausgeglichen (Mitte)",
+        "farben": [
+          "gelb",
+          "hellbraun",
+          "sand",
+          "beige",
+          "warmgrau",
+          "terrakotta",
+          "tan"
+        ],
+        "form": "Quadrat",
+        "richtung": "Mitte",
+        "jahreszeit": null,
+        "bewegung": "horizontal",
+        "textur": "grob, roh",
+        "bedeutung": "Balance, Ruhe, Erdung",
+        "hinweis": "Für große Flächen geeignet, dann eher entsättigt (warmes Grau statt Gelb). Gelb regt den Appetit an."
+      },
+      "metall": {
+        "yin_yang": "yin",
+        "farben": [
+          "weiss",
+          "hellgrau",
+          "hellblaugrau",
+          "silber",
+          "gold"
+        ],
+        "form": "Kreis / Kugel",
+        "richtung": "W",
+        "jahreszeit": "Herbst",
+        "bewegung": "nach innen",
+        "textur": "glänzend, glatt",
+        "bedeutung": "Präzision, Verwandlung, Dichte",
+        "hinweis": "Gut fürs Arbeitszimmer. Weiß ist KEINE neutrale Grundfarbe – ganze weiße Räume wirken leicht angespannt. Unsicher? Lieber ein mittleres Grau."
+      },
+      "wasser": {
+        "yin_yang": "yin",
+        "farben": [
+          "schwarz",
+          "dunkelblau",
+          "dunkelgrau",
+          "graublau"
+        ],
+        "form": "fließend / unbestimmt",
+        "richtung": "N",
+        "jahreszeit": "Winter",
+        "bewegung": "abwärts",
+        "textur": "zufällig, weich",
+        "bedeutung": "Fluss, Tiefe",
+        "hinweis": "Nie reines Schwarz für Wände – sehr dunkles Blau/Braun. Schwarz nur als Akzent/Rahmen. Blau dämpft den Appetit -> nicht im Esszimmer."
+      },
+      "holz": {
+        "yin_yang": "yang",
+        "farben": [
+          "grün",
+          "hellblau",
+          "gesättigtes blau"
+        ],
+        "form": "stehendes Rechteck (vertikal)",
+        "richtung": "O",
+        "jahreszeit": "Frühling",
+        "bewegung": "nach außen",
+        "textur": "rau, vertikal verlaufend",
+        "bedeutung": "Wachstum, Vitalität, Leben",
+        "hinweis": "Über Pflanzen und Naturmaterialien zeigen. Grüne Wand nur sehr dezent (Grau mit Grünstich)."
+      }
+    },
+    "erzeugung": {
+      "holz": "feuer",
+      "feuer": "erde",
+      "erde": "metall",
+      "metall": "wasser",
+      "wasser": "holz"
+    },
+    "kontrolle": {
+      "holz": "erde",
+      "erde": "wasser",
+      "wasser": "feuer",
+      "feuer": "metall",
+      "metall": "holz"
+    },
+    "himmelsrichtung": {
+      "N": {
+        "element": "wasser",
+        "jahreszeit": "Winter",
+        "licht": "nie direkte Sonne; indirekt, gleichmäßig, ruhig, kühl-bläulich",
+        "geeignet_fuer": [
+          "buero",
+          "atelier"
+        ],
+        "wandfarbe": "neutrale bis warme Töne (mehr Yang)",
+        "fenster": "möglichst keine Abdeckungen, Licht frei hereinlassen",
+        "kunstlicht_abends": "eher kräftig, um fehlende Tagesenergie auszugleichen"
+      },
+      "S": {
+        "element": "feuer",
+        "jahreszeit": "Sommer",
+        "licht": "tagsüber dauerhaft starke, rohe Sonne",
+        "geeignet_fuer": [
+          "wohnzimmer",
+          "eingang"
+        ],
+        "wandfarbe": "eher lebendige Farben",
+        "fenster": "robuste Pflanzen können das starke Chi abmildern",
+        "kunstlicht_abends": "stimmungsvoll und sanft"
+      },
+      "O": {
+        "element": "holz",
+        "jahreszeit": "Frühling",
+        "licht": "belebendes Morgenlicht, danach eher kühl",
+        "geeignet_fuer": [
+          "kinderzimmer",
+          "schlafzimmer",
+          "wintergarten"
+        ],
+        "wandfarbe": "wärmere Töne",
+        "fenster": "Holz-Elemente passen (aber: Holz = Wachstum, nicht ideal fürs Erwachsenen-Schlafzimmer)",
+        "kunstlicht_abends": "etwas kräftiger"
+      },
+      "W": {
+        "element": "metall",
+        "jahreszeit": "Herbst",
+        "licht": "reiche, orange-feurige Abendsonne",
+        "geeignet_fuer": [
+          "schlafzimmer"
+        ],
+        "wandfarbe": "kühlere Farben zum Ausgleich",
+        "fenster": "",
+        "kunstlicht_abends": "sanftes Licht nach Sonnenuntergang"
+      }
+    },
+    "raum_profil": {
+      "schlafzimmer": {
+        "element": "erde (mehr als feuer)",
+        "yin_yang": "yin",
+        "stimmung": "neutral, beruhigend, horizontale Linien, natürliche Töne",
+        "hauptmoebel": "bett",
+        "lage_in_wohnung": "weit weg von der Wohnungstür, hinter Wohn-/Essbereich; nicht neben/über Küche; nicht direkt am Bad"
+      },
+      "kinderzimmer": {
+        "element": "holz",
+        "yin_yang": "mehr yang",
+        "stimmung": "energischer, Pflanzen und Computer sind ok",
+        "hauptmoebel": "bett",
+        "lage_in_wohnung": "idealerweise Ostseite (Morgensonne = Wachstum)"
+      },
+      "buero": {
+        "element": "je nach Ziel: Wachstum=grün/hellblau, Wohlstand=gold/satte Töne, Stabilität=erdig, flexibel=schwarz/dunkelblau, präzise=weiß",
+        "yin_yang": "yang",
+        "stimmung": "hell, gleichmäßig beleuchtet, ordentlich",
+        "hauptmoebel": "schreibtisch",
+        "lage_in_wohnung": "Konzentration -> hinterer, ruhiger Teil; Publikumsverkehr -> vorne. Weg von Küche/Bad."
+      },
+      "wohnzimmer": {
+        "element": "lebendig / yang",
+        "yin_yang": "yang",
+        "stimmung": "einladend, Sitzkreis, Pflanzen, Spiegel, evtl. Aquarium",
+        "hauptmoebel": "sofa",
+        "lage_in_wohnung": "Mitte der Wohnung, von anderen Räumen aus sichtbar"
+      },
+      "esszimmer": {
+        "element": "erde",
+        "yin_yang": "yang",
+        "stimmung": "hell, energiegeladen, Fülle (Tisch nie leer), keine Uhren",
+        "hauptmoebel": "esstisch",
+        "lage_in_wohnung": "zentral, neben der Küche, nicht in Sicht der Wohnungstür"
+      }
+    },
+    "licht": {
+      "kelvin_wohnen": [
+        2700,
+        2900
+      ],
+      "kelvin_minimum": 2500,
+      "kelvin_buero_ok": 3500,
+      "kelvin_tageslicht_ab": 4000,
+      "regeln": [
+        "Alle Leuchtmittel in einem Raum mit gleicher Farbtemperatur.",
+        "Mehrere Lichtquellen statt eines einzelnen Deckenlichts.",
+        "Drei von vier Raumecken beleuchten, eine Ecke bewusst im Schatten (Yin) lassen.",
+        "Mehr Licht nahe den Fenstern und in aktiven Zonen, Durchgänge/Ecken dunkler.",
+        "Schlafzimmer: immer diffuses Licht (Opal-/Milchglas, Schirme); keine Arbeits-/Spotleuchten.",
+        "Yang-Räume (Wohnen/Essen) dürfen klare, funkelnde Leuchtmittel haben.",
+        "Nur EINE Statement-Pendelleuchte pro Raum; nie über Sofa, Sitzplatz oder Bett, besser über Couch-/Esstisch.",
+        "Pendel-/Deckenleuchten rund (Metall/Himmel) oder dreieckig/kegelig (Feuer) – keine eckigen.",
+        "Spots auf Objekte/Kunst richten, nicht auf Sitzplätze oder beliebige Bodenstellen.",
+        "Niedrige Decke / Dachschräge: Steh- oder Tischleuchten am niedrigen Ende 'heben' die Decke.",
+        "Fensterlose Räume: weiches Licht an die Wände (Uplighter) statt hartem Zentrallicht.",
+        "Arbeitsbereich: gleichmäßig hell; Tipp: starker Uplighter gegen weiße Decke = schattenfreies Licht."
+      ]
+    },
+    "pflanzen": {
+      "empfohlen": {
+        "monstera": "großblättrig, rund, überall geeignet",
+        "geldbaum": "großblättrig, rund, überall geeignet",
+        "pilea": "großblättrig, rund, überall geeignet",
+        "peperomia": "großblättrig, rund, überall geeignet",
+        "farn": "weiches Laub, wirkt fruchtbar",
+        "jadebaum": "rundblättrige Sukkulente – ok",
+        "echeveria": "rundblättrige Sukkulente – ok",
+        "orchidee": "Vier Edle: Frühling",
+        "bambus": "Vier Edle: Sommer",
+        "chrysantheme": "Vier Edle: Herbst (aber auch Trauerblume)",
+        "pflaumenbluete": "Vier Edle: Winter / Hoffnung"
+      },
+      "mit_vorsicht": {
+        "kaktus": "spitz, steht für unwirtliches Klima – nicht in die Wohnung (draußen ok, schützt)",
+        "aloe vera": "spitzblättrig -> eher Feuer; nur in energiereichen Bereichen",
+        "bogenhanf": "spitze Blätter = Feuer; nicht in ruhigen Räumen (Schlafzimmer)",
+        "palme": "je nach Blattform: hängend = Holz/Wasser, nach oben spitz = Holz/Feuer -> Wohnzimmer/Küche",
+        "dracaena": "wie Palme"
+      },
+      "vermeiden": {
+        "kunstpflanze": "Ungleichgewicht, sammelt Staub – lieber Mobile, Skulpturleuchte oder Obstschale",
+        "tote pflanze": "lieber gar keine Pflanze als eine tote"
+      },
+      "orte": {
+        "schlafzimmer": "möglichst keine; wenn doch: als Gruppe direkt am Fenster, Bett so weit weg wie möglich",
+        "wohnzimmer": "nicht verstreuen, sondern in Gruppen nahe den Fenstern",
+        "esszimmer": "ja, wenn genug Licht",
+        "buero": "ja (Wachstum), dort wo Tageslicht hinkommt",
+        "kueche": "ja, vermittelt zwischen Feuer und Wasser – aber nicht direkt neben den Herd",
+        "bad": "gut (Holz + Wasser), nur mit Fenster",
+        "eingang": "breitblättrige Pflanzen, wenn genug Licht"
+      }
+    },
+    "spiegel": {
+      "gut": [
+        "Wohnzimmer (energiereich)",
+        "Esszimmer (verdoppelt Essen/Fülle)",
+        "Arbeitsplatz mit Rücken zur Tür (um die Tür zu sehen)",
+        "abgestandene Räume ohne Leben",
+        "fehlende Raumecke ergänzen (nicht im Schlafzimmer)"
+      ],
+      "schlecht": [
+        "Schlafzimmer (wenn, dann nicht vom Bett aus sichtbar, nie am Fußende)",
+        "außen am Haus",
+        "lange Flure (außer seitlich)",
+        "Küche (vor allem nicht auf den Herd gerichtet)",
+        "direkt gegenüber der Eingangstür",
+        "so, dass er Fernseher oder Türen spiegelt",
+        "hinter dem eigenen Sitzplatz"
+      ],
+      "qualitaet": [
+        "regelmäßige Form",
+        "zeigt die ganze Person ohne Lücken",
+        "sauber, ohne Risse/Verzerrung",
+        "keine geteilten Spiegel (Spiegelfliesen)",
+        "nicht zu hoch, nicht zu tief hängen"
+      ],
+      "hinweis": "Glänzende schwarze Flächen (z.B. TV) wirken wie Spiegel."
+    },
+    "stauraum": {
+      "plan": {
+        "arbeitszimmer": "Bücher, Schreibwaren (auch Kochbücher gehören ins Bücherregal!)",
+        "schlafzimmer": "Kleidung",
+        "bad": "Pflegeprodukte, Erste Hilfe",
+        "abstellraum": "Werkzeug, Putzzeug",
+        "kueche": "Kochutensilien",
+        "esszimmer": "Besteck, Geschirr",
+        "wohnzimmer": "Sammel- und Ausstellungsstücke"
+      },
+      "regeln": [
+        "Alles kategorisieren, Unterkategorien bilden – keine 'Sonstiges'-Kisten.",
+        "Unteres Drittel der Wandhöhe = Stauraum; obere zwei Drittel frei für Deko (Bilder, Lampen, Pflanzen).",
+        "Keine hohen Bücherregale/Wandregale, keine hoch gestapelten Kisten.",
+        "Zu viele Möbel sind auch Unordnung. Türen nie zustellen.",
+        "Beschriftete Schranktüren statt Glastüren.",
+        "Zettel, Postkarten, Haftnotizen nur innerhalb EINER Pinnwand.",
+        "Papiere/Kartons außer Sicht und geordnet; Unbenutztes wegwerfen."
+      ]
+    },
+    "objekte": {
+      "bagua_spiegel": "nie im Innenraum; Autor rät generell ab (unfreundliche Geste)",
+      "kalebasse": "nimmt schlechte Energie auf, z.B. zwischen Bett und Wand zur Toilette",
+      "drache": "sehr viel Energie -> Wohnzimmer, nicht Schlafzimmer/Bad",
+      "geldfrosch": "nie direkt am Eingang",
+      "fu_hunde": "paarweise am Eingang; von innen nach außen geschaut: Weibchen rechts, Männchen links",
+      "mandarinenten": "paarweise, wo Liebe wachsen soll",
+      "segelschiff": "Bug zeigt ins Haus (zieht Wohlstand herein)",
+      "schildkroete": "hinterer Teil der Wohnung (Berg im Rücken)",
+      "windspiel": "bremst Chi: viele Fenster, Durchgänge, Treppe vor der Tür; nie über Bett oder Schreibtisch; hohl ist am besten",
+      "mobile": "sanfte Bewegung, beruhigend",
+      "lavalampe": "überall ok, aber nicht im Schlafzimmer, wenn sie nachts unruhig ist",
+      "uhr": "wo Eile/Präzision gewünscht ist; nicht in Ess- oder Schlafzimmer",
+      "familienfotos": "gerahmt auf Beistelltischen nahe bei dir; nicht hoch aufgehängt, nie über Feuer/Kamin",
+      "religioese_objekte": "im wichtigsten Raum (Wohnzimmer), nicht im Schlafzimmer, nicht auf dem Boden, nicht in Linie mit dem Bett",
+      "aquarium": "Wohlstand & Energie – Büro/Wohnzimmer; nie Schlafzimmer; immer sauber halten",
+      "wasser": "immer fließend, nie stehend; nicht 'über' dir; nicht im Schlafzimmer",
+      "kristall_klar": "bei zu viel Chi (Tür auf Treppe/Bett) oder in fensterlosen Räumen aufhängen",
+      "jade": "steht für Holz/Wachstum"
+    },
+    "moebel": {
+      "esstisch_form": [
+        "rund (am besten)",
+        "oval",
+        "quadratisch (Erde)",
+        "rechteckig (ok, Kopfenden beachten)",
+        "unregelmäßig / zusammengeschobene Tische vermeiden"
+      ],
+      "esstisch_material": "Holz, Stein, Ton/Terrakotta gut; Glas vermeiden (sonst Tischdecke)",
+      "esstisch_stuehle": "alle gleich, gerade Anzahl, keiner an den Ecken, stabil; Ersatzstühle aus dem Raum",
+      "schreibtisch_form": "rechteckig = hartes Verhandeln, geschwungen = Kreativität; hell/naturfarben am besten; spiegelnde Oberflächen = zu viel Energie",
+      "bett_design": "massives oder gepolstertes Kopfteil (je breiter desto besser), stabiler Rahmen, kein Wasserbett, niedrige Betten wirken ruhiger, Himmelbetten streng; Luft unter dem Bett, Bettkasten nicht vollstopfen",
+      "bettwaesche": "helle, ruhige Farben; wenn dunkel, dann nicht schwarz; Bett morgens machen",
+      "nachttische": "paarweise mit gleichem visuellem Gewicht, rund oder niedriger als die Matratze, geschlossen, nicht aus Glas",
+      "kleiderschrank": "Einbauschrank > ein großer freistehender > mehrere kleine (viele Ecken); ordentlich, nicht vollgestopft",
+      "sofa": "ein Hauptsofa + Sessel; L-Sofa durch Sessel diagonal ergänzen; nicht allein lassen"
+    }
+  }
+}
