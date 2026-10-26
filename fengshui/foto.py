@@ -390,6 +390,29 @@ def foto_empfehlungen(erk: list[Erkennung], groesse: tuple[int, int], raumtyp: s
     return H
 
 
+# ------------------------------------------------------------------ Raumtyp erkennen
+def raumtyp_erkennen(erk: list[Erkennung]) -> str:
+    """Schätzt den Raumtyp aus den erkannten Objekten (Bett -> Schlafzimmer, WC -> Bad, …)."""
+    da = {e.typ for e in erk if e.conf >= 0.3} or {e.typ for e in erk}
+    if da & {"wc", "badewanne", "dusche"}:
+        return "bad"
+    if da & {"herd", "spuele", "kuehlschrank"} and not da & {"bett", "sofa"}:
+        return "kueche"
+    if "bett" in da and da & {"sofa", "herd", "esstisch"}:
+        return "studio"
+    if "etagenbett" in da:
+        return "kinderzimmer"
+    if "bett" in da:
+        return "schlafzimmer"
+    if "sofa" in da or "tv" in da:
+        return "wohnzimmer"
+    if "esstisch" in da:
+        return "esszimmer"
+    if "schreibtisch" in da or "bildschirm" in da:
+        return "buero"
+    return "schlafzimmer"
+
+
 # ------------------------------------------------------------------ Brücke zum Optimierer
 def zu_moebelliste(erk: list[Erkennung]) -> list[Moebel]:
     """Erkannte Möbel -> Moebel-Objekte mit Standardmaßen (bitte nachmessen und anpassen!)."""

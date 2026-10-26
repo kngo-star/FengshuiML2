@@ -251,14 +251,15 @@ def vorher_nachher(rgb: np.ndarray, erkl: np.ndarray, korrigiert: np.ndarray, le
 
 
 # ------------------------------------------------------------------ Alles in einem Aufruf
-def foto_korrigieren(pfad: str, raumtyp: str = "schlafzimmer", ausgabe_ordner: str = "ausgabe",
+def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "ausgabe",
                      bewohner=None, gewichte: Optional[dict] = None, kamera_in_ecke: bool = True,
                      foto_von_tuer: bool = False, bekannte_breite: Optional[float] = None,
                      preis_pro_meter: float = 4.0, zeigen: bool = True):
     """Foto rein → analysiertes, korrigiertes Foto raus.
 
-    Speichert: foto_korrigiert.jpg (verschobene Möbel), foto_aenderungen.jpg (Umrisse + Pfeile),
-               foto_vorher_nachher.png (alles nebeneinander mit Erklärung).
+    raumtyp="auto" erkennt den Raum selbst (Bett -> Schlafzimmer, Sofa -> Wohnzimmer, WC -> Bad …).
+    Speichert <name>_korrigiert.jpg (verschobene Möbel), <name>_aenderungen.jpg (Umrisse + Pfeile),
+    <name>_vorher_nachher.png (alles nebeneinander mit Erklärung).
     """
     import os
     from PIL import Image
@@ -268,15 +269,23 @@ def foto_korrigieren(pfad: str, raumtyp: str = "schlafzimmer", ausgabe_ordner: s
     os.makedirs(ausgabe_ordner, exist_ok=True)
     v, erk, _ = zimmer_aus_foto(pfad, raumtyp, kamera_in_ecke=kamera_in_ecke, foto_von_tuer=foto_von_tuer,
                                 bekannte_breite=bekannte_breite)
+    if not any(not m.ist_wandobjekt and not m.ist_deckenobjekt for m in v.layout.moebel):
+        raise ValueError("Keine Möbel erkannt – ist das ein Zimmerfoto? Bett, Sofa, Schreibtisch o. Ä. "
+                         "sollten gut sichtbar sein.")
     _, rgb = kamera_aus_foto(pfad)
     ist = v.fuer_optimierer()
     if bewohner is not None:
         ist.bewohner = bewohner
     neu, e_neu, aenderungen, e_ist = korrigiere(ist, gewichte, preis_pro_meter=preis_pro_meter, ausgabe=False)
     korr, erkl, legende = korrigiere_foto(rgb, v, neu, aenderungen)
-    Image.fromarray(korr).save(os.path.join(ausgabe_ordner, "foto_korrigiert.jpg"), quality=92)
-    Image.fromarray(erkl).save(os.path.join(ausgabe_ordner, "foto_aenderungen.jpg"), quality=92)
-    vorher_nachher(rgb, erkl, korr, legende, e_ist.score, e_neu.score,
-                   datei=os.path.join(ausgabe_ordner, "foto_vorher_nachher.png"), zeigen=zeigen)
+    stamm = os.path.splitext(os.path.basename(pfad))[0]
+    dateien = {"korrigiert": os.path.join(ausgabe_ordner, f"{stamm}_korrigiert.jpg"),
+               "aenderungen": os.path.join(ausgabe_ordner, f"{stamm}_aenderungen.jpg"),
+               "vorher_nachher": os.path.join(ausgabe_ordner, f"{stamm}_vorher_nachher.png")}
+    Image.fromarray(korr).save(dateien["korrigiert"], quality=92)
+    Image.fromarray(erkl).save(dateien["aenderungen"], quality=92)
+    vorher_nachher(rgb, erkl, korr, legende, e_ist.score, e_neu.score, datei=dateien["vorher_nachher"],
+                   zeigen=zeigen)
     return {"vermessung": v, "vorher": e_ist, "nachher": e_neu, "layout_neu": neu,
-            "aenderungen": aenderungen, "legende": legende, "korrigiert": korr, "erklaerung": erkl}
+            "aenderungen": aenderungen, "legende": legende, "korrigiert": korr, "erklaerung": erkl,
+            "raumtyp": v.layout.raum.raumtyp, "dateien": dateien}

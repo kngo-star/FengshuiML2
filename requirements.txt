@@ -5,3 +5,4 @@ ultralytics>=8.3
 pillow
 transformers>=4.45
 torch
+pillow-heif   # iPhone-Fotos (HEIC)

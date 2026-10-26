@@ -19,3 +19,7 @@ mein_zimmer.jpg
 !ausgabe/alle_varianten.png
 meine_bewertungen.json
 ausgabe/erkennungen.json
+
+# Foto-Eingang/-Ausgang (start.py) – private Fotos
+fotos_rein/
+fotos_raus/

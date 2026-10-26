@@ -59,8 +59,14 @@ class Kamera:
 
 
 def kamera_aus_foto(pfad: str, fov_grad: Optional[float] = None) -> tuple["Kamera", np.ndarray]:
-    """Lädt das Foto (EXIF-Drehung korrigiert) und schätzt die Brennweite in Pixeln."""
+    """Lädt das Foto (EXIF-Drehung korrigiert) und schätzt die Brennweite in Pixeln.
+    Auch iPhone-Fotos (HEIC), wenn `pillow-heif` installiert ist."""
     from PIL import Image, ImageOps
+    try:
+        from pillow_heif import register_heif_opener
+        register_heif_opener()
+    except ImportError:
+        pass
     img = Image.open(pfad)
     exif = img.getexif()
     f35 = None
@@ -594,7 +600,7 @@ def _aufraeumen(lay: Layout, runden: int = 12) -> None:
 
 
 # ====================================================================== Alles in einem
-def zimmer_aus_foto(pfad: str, raumtyp: str = "schlafzimmer", yolo_modell: str = "yoloe-11s-seg.pt",
+def zimmer_aus_foto(pfad: str, raumtyp: str = "auto", yolo_modell: str = "yoloe-11s-seg.pt",
                     conf: float = 0.2, kamera_in_ecke: bool = True, foto_von_tuer: bool = False,
                     fov_grad: Optional[float] = None, bekannte_breite: Optional[float] = None,
                     bekannte_tiefe: Optional[float] = None) -> tuple[Vermessung, list[Erkennung], np.ndarray]:
@@ -613,6 +619,9 @@ def zimmer_aus_foto(pfad: str, raumtyp: str = "schlafzimmer", yolo_modell: str =
     tmp = os.path.join(tempfile.gettempdir(), "fengshui_foto_gerade.jpg")
     Image.fromarray(rgb).save(tmp, quality=95)
     erk, _ = erkenne(tmp, yolo_modell, conf)
+    if raumtyp in (None, "", "auto"):
+        from .foto import raumtyp_erkennen
+        raumtyp = raumtyp_erkennen(erk)
     tiefe = schaetze_tiefe(rgb)
     v = vermesse(rgb.shape[:2], tiefe, kam, erk, raumtyp, kamera_in_ecke, foto_von_tuer)
     bekannt = [(bekannte_breite, v.layout.raum.breite), (bekannte_tiefe, v.layout.raum.tiefe)]

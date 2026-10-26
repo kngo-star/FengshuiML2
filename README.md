@@ -7,6 +7,16 @@ Regelbasis + Optimierer + Machine Learning + YOLO-Fotoanalyse
 Python-Projekt für PyCharm, das dein Zimmer automatisch nach den Feng-Shui-Regeln aus dem Buch
 einrichtet (Form-Schule: Kommandoposition, Chi-Fluss, fünf Elemente).
 
+## ▶ Am einfachsten: nur ein Foto reinlegen (`start.py`)
+
+1. In PyCharm: Rechtsklick auf **`start.py`** → **Run 'start'** (einmal starten, läuft dann weiter).
+2. Der Ordner **`fotos_rein`** öffnet sich – Foto(s) deines Zimmers hineinziehen (`.jpg`, `.png`, iPhone-`.heic`).
+3. Fertig: In **`fotos_raus`** erscheinen pro Foto `…_korrigiert.jpg`, `…_aenderungen.jpg`,
+   `…_vorher_nachher.png` (öffnet sich automatisch) und `…_bericht.txt`.
+
+Der Raumtyp (Schlafzimmer, Wohnzimmer, Büro, Küche, Bad …) wird **automatisch erkannt**.
+Fotos bleiben auf deinem Computer – `fotos_rein/` und `fotos_raus/` werden nicht zu GitHub hochgeladen.
+
 ## In Google Colab nutzen (ohne Installation)
 
 Oben auf **Open in Colab** klicken und die Zellen von oben nach unten ausführen.

@@ -18,7 +18,7 @@ from fengshui.ml import Personalisierung
 from fengshui.modell import Bewohner
 
 FOTO = "mein_zimmer.jpg"
-RAUMTYP = "schlafzimmer"
+RAUMTYP = "auto"            # "auto" = selbst erkennen, sonst z. B. "schlafzimmer"
 PAAR = False                # zwei Personen im Bett?
 SUCHT_PARTNER = False
 UMSTELL_AUFWAND = 4.0       # höher = es wird weniger verschoben (Punkte pro Meter Verschieben)
@@ -46,7 +46,8 @@ def main():
     for zeile in r["legende"]:
         print("  ", zeile)
     print("\n" + bericht(r["layout_neu"], r["nachher"]))
-    print("\nGespeichert: ausgabe/foto_korrigiert.jpg, ausgabe/foto_aenderungen.jpg, ausgabe/foto_vorher_nachher.png")
+    print(f"\nErkannter Raumtyp: {r['raumtyp']}")
+    print("Gespeichert:", ", ".join(r["dateien"].values()))
 
 
 if __name__ == "__main__":
