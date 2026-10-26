@@ -11,7 +11,10 @@ FARBEN = {
     "sessel": "#cbb8dc", "couchtisch": "#d9cbb0", "schrank": "#8c8c8c", "kommode": "#a0a0a0",
     "regal": "#9a8478", "pflanze": "#5d9b5d", "spiegel": "#7fb3d5", "bild": "#e0a458",
     "wandregal": "#6d5a4e", "tv": "#333333", "esstisch": "#c2a278", "bank": "#bfae93",
-    "konsole": "#b09a7e", "teppich": "#efe6d8",
+    "konsole": "#b09a7e", "teppich": "#efe6d8", "stuhl": "#d4c4a8", "stehleuchte": "#f4d35e",
+    "tischleuchte": "#f4d35e", "pendelleuchte": "#f4d35e", "herd": "#e76f51", "spuele": "#8ecae6",
+    "kuehlschrank": "#bde0fe", "wc": "#e0e0e0", "badewanne": "#a2d2ff", "dusche": "#cde7f0",
+    "waschbecken": "#bde0fe", "etagenbett": "#c9b79c",
 }
 
 
@@ -55,9 +58,14 @@ def zeichne(layout: Layout, titel: str = "", datei: Optional[str] = None, zeigen
             ax.add_patch(Rectangle((z[0], z[1]), z[2] - z[0], z[3] - z[1], fc=farbe, alpha=0.07, ec=farbe, ls=":"))
 
     # Möbel (Teppich zuerst)
-    for m in sorted(layout.moebel, key=lambda m: m.typ != "teppich"):
+    for m in sorted(layout.moebel, key=lambda m: (m.typ != "teppich", m.ist_deckenobjekt)):
         x1, y1, x2, y2 = m.rechteck
         farbe = FARBEN.get(m.typ, "#cccccc")
+        if m.ist_deckenobjekt:          # Hängeleuchte: gestrichelter Kreis über allem
+            from matplotlib.patches import Circle
+            ax.add_patch(Circle((m.x, m.y), max(x2 - x1, 0.3) / 2, fc=farbe, alpha=0.35, ec="#b8860b", ls="--", lw=1.2))
+            ax.text(m.x, m.y, m.name, ha="center", va="center", fontsize=5.5, color="#6b5000")
+            continue
         if m.rund:
             from matplotlib.patches import Ellipse
             ax.add_patch(Ellipse((m.x, m.y), x2 - x1, y2 - y1, fc=farbe, ec="#333", lw=1))
@@ -72,7 +80,7 @@ def zeichne(layout: Layout, titel: str = "", datei: Optional[str] = None, zeigen
             else:
                 xk = x2 if hx > 0 else x1
                 ax.plot([xk, xk], [y1, y2], color="#5a4632", lw=4)
-        if not m.ist_wandobjekt and m.typ not in ("pflanze", "teppich", "nachttisch"):
+        if not m.ist_wandobjekt and m.typ not in ("pflanze", "teppich", "nachttisch", "stehleuchte", "tischleuchte"):
             vx, vy = m.vorne
             ax.add_patch(FancyArrow(m.x, m.y, vx * 0.25, vy * 0.25, width=0.02, head_width=0.09,
                                     head_length=0.07, color="#333"))

@@ -26,6 +26,7 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 | 2 | `main.py` → Run | Optimierer sucht die besten Anordnungen, druckt Bewertung und Hinweise, speichert Grundrisse in `ausgabe/` |
 | 3 | `lernen.py` → Run | **Machine Learning:** du bewertest Vorschläge mit 0–10, das Modell lernt, welche Regeln dir wichtig sind |
 | 4 | `main.py` erneut | nutzt jetzt automatisch deine gelernten Gewichte (`meine_bewertungen.json`) |
+| 🪄 | `foto_korrigieren.py` → Run | **Foto rein → dasselbe Foto mit korrigierten Möbeln raus** (nur Problem-Möbel werden minimal verschoben) |
 | ✨ | `zimmer_aus_foto.py` → Run | **Zimmer aus einem Foto vermessen** – keine Meter eintippen: Raummaße, Tür/Fenster, Möbelpositionen → Bewertung + Optimierung |
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
 | – | `regeln_exportieren.py` | schreibt die gesamte Regelbasis als `regelbasis.md` / `regelbasis.json` |
@@ -124,3 +125,24 @@ Brusthöhe, Handy gerade, Raum hell, Boden + mindestens zwei Wände sichtbar.
 **Genauigkeit:** im Test an einem gerenderten Zimmer (3,60 × 4,20 m) lagen Raummaße und Möbel
 bei ±5–10 cm; mit echten Fotos ist ±10–20 cm realistisch. Wände hinter der Kamera werden geschätzt,
 verdeckte Möbelrückseiten mit Standardmaßen ergänzt – Ergebnis kurz prüfen und bei Bedarf korrigieren.
+
+## 🪄 Dasselbe Foto mit korrigierten Möbeln (`foto_korrigieren.py`, Colab-Schritt 3B)
+
+1. Foto vermessen (siehe oben) → Raum, Möbel, Masken, Kamera
+2. **Minimal-Korrektur** (`optimierer.korrigiere`): Start bei deiner jetzigen Einrichtung; jedes Möbel wird
+   systematisch an jeder Wand/Position getestet, dann Feinschliff per Simulated Annealing. Verschieben kostet
+   Punkte pro Meter, Drehen kostet extra → nur Möbel mit echten Problemen werden bewegt.
+3. **Foto bearbeiten** (`fengshui/foto_korrektur.py`): Möbel ausschneiden, Lücke mit **LaMa** füllen,
+   Ausschnitt perspektivisch skaliert an die neue Bodenposition setzen, Verdeckungen nachbilden.
+4. Ausgabe: `foto_korrigiert.jpg`, `foto_aenderungen.jpg` (rot = jetzt, grün = neu, Pfeile, Nummern),
+   `foto_vorher_nachher.png` mit Begründung je Änderung.
+
+**Grenzen:** Das verschobene Möbel behält die Ansicht aus dem Originalfoto (bei großen Wegen sieht man die
+Perspektive). Gedrehte Möbel werden nur als 3D-Umriss gezeigt. Vom Bildrand abgeschnittene Möbel bleiben stehen.
+
+## Neue Regeln (Version 2)
+Licht (L01–L03), Esszimmer (E01–E06), geteiltes Schlafzimmer (G01–G03), Studio-Schichten (ST1),
+**Küche** (KU1–KU4, Raumtyp `kueche`) und **Bad** (BA1–BA5, Raumtyp `bad`) – insgesamt jetzt 59 Regeln.
+Neue Möbeltypen: `stuhl` (mit `gehoert_zu="Esstisch"` automatisch um den Tisch verteilt), `stehleuchte`,
+`tischleuchte`, `pendelleuchte`, `herd`, `spuele`, `kuehlschrank`, `wc`, `badewanne`, `dusche`,
+`waschbecken`, `etagenbett`.

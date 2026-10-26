@@ -44,7 +44,10 @@ _HIMMEL_UHRZEIGER = ["N", "O", "S", "W"]
 # Möbeltypen, die an der Wand hängen (keine Bodenfläche)
 WANDOBJEKTE = {"spiegel", "bild", "wandregal", "pinnwand", "uhr"}
 # Möbeltypen ohne "Hindernis"-Wirkung
-FLACH = {"teppich"}
+FLACH = {"teppich", "tischleuchte", "pendelleuchte", "ventilator"}
+# Hängen an der Decke (keine Bodenfläche, frei im Raum platzierbar)
+DECKENOBJEKTE = {"pendelleuchte", "ventilator"}
+LAMPEN = {"stehleuchte", "tischleuchte", "pendelleuchte"}
 # Hauptmöbel, für die die Kommandoposition gilt (Buch: Bett, Schreibtisch, Sofa)
 KOMMANDO_MOEBEL = {"bett", "schreibtisch", "sofa"}
 
@@ -210,6 +213,10 @@ class Moebel:
     @property
     def ist_wandobjekt(self) -> bool:
         return self.typ in WANDOBJEKTE
+
+    @property
+    def ist_deckenobjekt(self) -> bool:
+        return self.typ in DECKENOBJEKTE
 
     def kopie(self) -> "Moebel":
         return copy.copy(self)

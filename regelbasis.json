@@ -386,6 +386,277 @@
         "studio",
         "wohnzimmer"
       ]
+    },
+    {
+      "id": "L01",
+      "titel": "Keine Hängeleuchte über Bett oder Sitzplatz",
+      "beschreibung": "Schwere Pendel-/Kronleuchter und Ventilatoren nie über Bett, Sofa oder Sitzplatz – sie hängen wie eine Last über dir. Besser über Couch- oder Esstisch (eine leichte Papierleuchte über dem Bett ist ok).",
+      "quelle": "Kap. 3 Kronleuchter, Kap. 4 Wohnzimmer/Schlafzimmer, Kap. 5 Licht",
+      "kategorie": "chi",
+      "gewicht": 1.5,
+      "raumtypen": null
+    },
+    {
+      "id": "L02",
+      "titel": "Pendelleuchte über dem Tisch",
+      "beschreibung": "Die Hängeleuchte gehört mittig über den Esstisch (bzw. den Couchtisch) – sie zieht die Leute an den Tisch. Nur eine Statement-Leuchte pro Raum.",
+      "quelle": "Kap. 4 Esszimmer, Kap. 5 Hängeleuchten",
+      "kategorie": "stil",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "esszimmer",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "L03",
+      "titel": "Drei von vier Ecken beleuchten",
+      "beschreibung": "Mehrere niedrige Lichtquellen statt einem Deckenlicht: etwa drei von vier Raumecken mit Steh- oder Tischleuchten beleuchten, eine Ecke bewusst im Schatten (Yin) lassen.",
+      "quelle": "Kap. 5 Künstliches Licht",
+      "kategorie": "stil",
+      "gewicht": 0.8,
+      "raumtypen": [
+        "buero",
+        "esszimmer",
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "E01",
+      "titel": "Esstisch: rund ist am besten",
+      "beschreibung": "Runde Tische haben keine Ecken und keine Hierarchie; danach oval, quadratisch (Erde) und rechteckig. Unregelmäßige oder zusammengeschobene Tische vermeiden.",
+      "quelle": "Kap. 4 Esszimmer – Tischform",
+      "kategorie": "stil",
+      "gewicht": 0.6,
+      "raumtypen": [
+        "esszimmer",
+        "kueche",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "E02",
+      "titel": "Gerade Anzahl gleicher Stühle",
+      "beschreibung": "Immer eine gerade Anzahl Stühle, alle gleich (keine Hierarchie), keiner an einer Tischecke. Ersatzstühle gehören nicht in den Raum.",
+      "quelle": "Kap. 4 Esszimmer – Stühle",
+      "kategorie": "stil",
+      "gewicht": 0.8,
+      "raumtypen": [
+        "esszimmer",
+        "kueche",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "E03",
+      "titel": "Nur Tisch und Stühle in der Mitte",
+      "beschreibung": "Konsolen und Sideboards stehen an der Wand, die Raummitte gehört dem Esstisch. Nichts darf den Tisch überragen.",
+      "quelle": "Kap. 4 Esszimmer – andere Möbel",
+      "kategorie": "stil",
+      "gewicht": 0.6,
+      "raumtypen": [
+        "esszimmer"
+      ]
+    },
+    {
+      "id": "E04",
+      "titel": "Esstisch nicht im Eingang",
+      "beschreibung": "Der Tisch soll die Tür im Blick haben, aber nicht im Weg stehen; kein Sitzplatz direkt an der Tür und nicht in einer Linie mit der Tür.",
+      "quelle": "Kap. 4 Esszimmer – Lage",
+      "kategorie": "chi",
+      "gewicht": 1.2,
+      "raumtypen": [
+        "esszimmer",
+        "kueche",
+        "studio",
+        "wohnzimmer"
+      ]
+    },
+    {
+      "id": "E05",
+      "titel": "Spiegel spiegelt den Esstisch",
+      "beschreibung": "Im Esszimmer sind Spiegel gut, wenn sie das Essen (Fülle) spiegeln – nicht die Tür.",
+      "quelle": "Kap. 4 Esszimmer, Kap. 5 Spiegel",
+      "kategorie": "stil",
+      "gewicht": 0.6,
+      "raumtypen": [
+        "esszimmer"
+      ]
+    },
+    {
+      "id": "E06",
+      "titel": "Keine Uhr im Ess- und Schlafzimmer",
+      "beschreibung": "Uhren erzeugen Zeitdruck – im Esszimmer zählt die Gesellschaft, im Schlafzimmer die Ruhe.",
+      "quelle": "Kap. 4 Esszimmer, Kap. 5 Kunst – Uhren",
+      "kategorie": "stil",
+      "gewicht": 0.6,
+      "raumtypen": [
+        "esszimmer",
+        "gaestezimmer",
+        "schlafzimmer"
+      ]
+    },
+    {
+      "id": "G01",
+      "titel": "Geteiltes Zimmer: gleiche Betten mit Abstand",
+      "beschreibung": "Mehrere Betten im Raum: gleich groß (kein Ungleichgewicht zwischen den Personen) und mit Abstand. Keine zwei Einzelbetten zusammenschieben – das steht für eine versteckte Trennung.",
+      "quelle": "Kap. 4 Geteilte Schlafzimmer",
+      "kategorie": "zonen",
+      "gewicht": 1.5,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "G02",
+      "titel": "Nicht die Füße zum Kopf des anderen",
+      "beschreibung": "Im geteilten Zimmer darf niemandes Fußende auf den Kopf einer anderen Person zeigen. Kopfteile Rücken an Rücken sind okay.",
+      "quelle": "Kap. 4 Geteilte Schlafzimmer",
+      "kategorie": "zonen",
+      "gewicht": 1.2,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "G03",
+      "titel": "Kein Etagenbett",
+      "beschreibung": "Etagenbetten möglichst vermeiden; wenn nötig, schläft die ältere Person oben.",
+      "quelle": "Kap. 4 Geteilte Schlafzimmer",
+      "kategorie": "stil",
+      "gewicht": 0.5,
+      "raumtypen": [
+        "gaestezimmer",
+        "kinderzimmer",
+        "schlafzimmer",
+        "studio"
+      ]
+    },
+    {
+      "id": "ST1",
+      "titel": "Studio: Schichten von ruhig nach aktiv",
+      "beschreibung": "In einer Ein-Raum-Wohnung: Bett im ruhigsten, hintersten Teil; davor der Wohnbereich als Puffer; dann Essen; die Küche so weit wie möglich vom Bett weg. Esstisch nahe an der Küche.",
+      "quelle": "Kap. 4 Studio-Apartments",
+      "kategorie": "zonen",
+      "gewicht": 2.0,
+      "raumtypen": [
+        "studio"
+      ]
+    },
+    {
+      "id": "KU1",
+      "titel": "Herd in der Kommandoposition",
+      "beschreibung": "Der Herd ist das wichtigste Element: hinten im Raum, von der Tür aus sichtbar, aber nicht direkt zur Tür gerichtet und nicht gleich neben dem Eingang.",
+      "quelle": "Kap. 4 Küche – Herd",
+      "kategorie": "kommando",
+      "gewicht": 2.0,
+      "raumtypen": [
+        "kueche",
+        "studio"
+      ]
+    },
+    {
+      "id": "KU2",
+      "titel": "Feuer und Wasser trennen",
+      "beschreibung": "Herd (Feuer) nicht direkt neben oder gegenüber von Spüle und Kühlschrank (Wasser) – mindestens eine Arbeitsfläche dazwischen, oder Holz (Pflanze) als Vermittler.",
+      "quelle": "Kap. 4 Küche – Prinzipien",
+      "kategorie": "chi",
+      "gewicht": 1.5,
+      "raumtypen": [
+        "kueche",
+        "studio"
+      ]
+    },
+    {
+      "id": "KU3",
+      "titel": "Herd nicht unter dem Fenster",
+      "beschreibung": "Ein Kochfeld unter dem Fenster lässt die Energie entweichen – besser an eine Wand mit Spritzschutz oder auf eine Kochinsel. Die Spüle darf unter dem Fenster stehen.",
+      "quelle": "Kap. 4 Küche – Kochfeld",
+      "kategorie": "chi",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "kueche",
+        "studio"
+      ]
+    },
+    {
+      "id": "KU4",
+      "titel": "Keine Spiegel in der Küche",
+      "beschreibung": "Spiegel verteilen das aggressive Chi der Küche – vor allem nie einen Spiegel, der auf den Herd zeigt.",
+      "quelle": "Kap. 4 Küche, Kap. 5 Spiegel",
+      "kategorie": "chi",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "kueche"
+      ]
+    },
+    {
+      "id": "BA1",
+      "titel": "WC nicht in Sicht- und Türlinie",
+      "beschreibung": "Das WC soll von der Tür aus nicht sichtbar sein und nicht in einer Linie mit der Tür stehen – aber selbst die Tür im Blick haben (Sicherheit). An eine Wand, nicht unters Fenster, nicht frei im Raum.",
+      "quelle": "Kap. 4 Bad – WC",
+      "kategorie": "kommando",
+      "gewicht": 2.0,
+      "raumtypen": [
+        "bad"
+      ]
+    },
+    {
+      "id": "BA2",
+      "titel": "WC weg von der Badewanne",
+      "beschreibung": "Niemand will in der Wanne liegen und das WC neben dem Gesicht haben. Das Waschbecken kann WC und Wanne trennen; eine Dusche neben dem WC ist eher akzeptabel.",
+      "quelle": "Kap. 4 Bad – WC",
+      "kategorie": "zonen",
+      "gewicht": 1.2,
+      "raumtypen": [
+        "bad"
+      ]
+    },
+    {
+      "id": "BA3",
+      "titel": "Badewanne: Blickfang, Füße nicht zur Tür",
+      "beschreibung": "Die Wanne verankert das Bad optisch und ist das Erste, was man beim Eintreten sieht – aber ihr Fußende zeigt nicht in Linie zur Tür.",
+      "quelle": "Kap. 4 Bad – Badewanne",
+      "kategorie": "kommando",
+      "gewicht": 1.0,
+      "raumtypen": [
+        "bad"
+      ]
+    },
+    {
+      "id": "BA4",
+      "titel": "Waschbecken: Rücken nicht zur Tür",
+      "beschreibung": "Beim Händewaschen soll die Tür nicht direkt hinter dir sein – Waschtisch und Spiegel am besten im rechten Winkel zur Tür.",
+      "quelle": "Kap. 4 Bad – Waschbecken",
+      "kategorie": "kommando",
+      "gewicht": 0.8,
+      "raumtypen": [
+        "bad"
+      ]
+    },
+    {
+      "id": "BA5",
+      "titel": "Kein Spiegel auf das WC",
+      "beschreibung": "Spiegel im Bad nicht so hängen, dass sie das WC spiegeln.",
+      "quelle": "Kap. 4 Bad",
+      "kategorie": "stil",
+      "gewicht": 0.8,
+      "raumtypen": [
+        "bad"
+      ]
     }
   ],
   "wissen": {

@@ -33,6 +33,10 @@ def an_wand_setzen(m: Moebel, layout: Layout, wand: str, pos: float) -> None:
 
 
 def _zufall_an_wand(m: Moebel, layout: Layout, rng: random.Random) -> None:
+    if m.ist_deckenobjekt:          # Pendelleuchte / Ventilator: irgendwo an der Decke
+        m.x = rng.uniform(0.3, layout.raum.breite - 0.3)
+        m.y = rng.uniform(0.3, layout.raum.tiefe - 0.3)
+        return
     wand = rng.choice(WAENDE)
     L = layout.raum.wandlaenge(wand)
     halb = m.breite / 2
@@ -49,10 +53,41 @@ def _klemmen(m: Moebel, layout: Layout) -> None:
     m.y = min(max(m.y, dy / 2), layout.raum.tiefe - dy / 2)
 
 
+def _stuehle_um_tisch(layout: Layout, tisch: Moebel, stuehle: list[Moebel]) -> None:
+    """Stühle gleichmäßig an die beiden langen Tischseiten verteilen, Blick zum Tisch, keiner an den Ecken."""
+    fx, fy = tisch.vorne
+    rx, ry = fy, -fx
+    lang_entlang_breite = tisch.breite >= tisch.tiefe
+    if lang_entlang_breite:
+        a_vec, n_vec, laenge, abst = (rx, ry), (fx, fy), tisch.breite, tisch.tiefe / 2
+    else:
+        a_vec, n_vec, laenge, abst = (fx, fy), (rx, ry), tisch.tiefe, tisch.breite / 2
+    pro_seite = max(1, int(laenge // 0.55))           # ca. 55 cm Platz pro Person
+    lang = stuehle[: 2 * pro_seite]
+    kopf = stuehle[2 * pro_seite:]
+    for vorz, gruppe in zip((1, -1), (lang[0::2], lang[1::2])):
+        k = len(gruppe)
+        for i, s in enumerate(gruppe):
+            entlang = ((i + 1) / (k + 1) - 0.5) * laenge   # gleichmäßig, Abstand zu den Ecken
+            raus = vorz * (abst + s.tiefe / 2 - 0.12)      # leicht unter den Tisch geschoben
+            s.x = tisch.x + a_vec[0] * entlang + n_vec[0] * raus
+            s.y = tisch.y + a_vec[1] * entlang + n_vec[1] * raus
+            s.rot = VEKTOR_ROT[(-vorz * n_vec[0], -vorz * n_vec[1])]   # schaut zum Tisch
+    for vorz, s in zip((1, -1), kopf):                    # übrige Stühle an die Kopfenden
+        raus = vorz * (laenge / 2 + s.tiefe / 2 - 0.12)
+        s.x = tisch.x + a_vec[0] * raus
+        s.y = tisch.y + a_vec[1] * raus
+        s.rot = VEKTOR_ROT[(-vorz * a_vec[0], -vorz * a_vec[1])]
+
+
 def kinder_platzieren(layout: Layout) -> None:
     """Nachttische, Couchtisch, Bank am Fußende usw. relativ zum Elternmöbel setzen."""
+    for tisch in layout.finde("esstisch"):
+        stuehle = [k for k in layout.moebel if k.gehoert_zu == tisch.name and k.typ == "stuhl"]
+        if stuehle:
+            _stuehle_um_tisch(layout, tisch, stuehle)
     for k in layout.moebel:
-        if not k.gehoert_zu:
+        if not k.gehoert_zu or (k.typ == "stuhl" and (p := layout.nach_name(k.gehoert_zu)) and p.typ == "esstisch"):
             continue
         p = layout.nach_name(k.gehoert_zu)
         if p is None:
@@ -187,3 +222,145 @@ def optimiere(layout: Layout, iterationen: int = 3000, neustarts: int = 6,
 def _unterschied(a: Layout, b: Layout) -> float:
     return sum(math.hypot(m.x - n.x, m.y - n.y) + (0.5 if m.rot != n.rot else 0)
                for m, n in zip(a.moebel, b.moebel))
+
+
+# ------------------------------------------------------------------ Minimal-Korrektur
+from dataclasses import dataclass as _dataclass, field as _field
+
+
+@_dataclass
+class Aenderung:
+    name: str
+    typ: str
+    von: tuple[float, float]
+    nach: tuple[float, float]
+    rot_von: int
+    rot_nach: int
+    gruende: list[str] = _field(default_factory=list)
+
+    @property
+    def gedreht(self) -> bool:
+        return self.rot_von % 360 != self.rot_nach % 360
+
+    @property
+    def strecke(self) -> float:
+        return math.dist(self.von, self.nach)
+
+    def text(self) -> str:
+        t = f"{self.name}: {self.strecke:.2f} m verschieben"
+        if self.gedreht:
+            t += f" und drehen ({_RICHTUNG[self.rot_von % 360]} → {_RICHTUNG[self.rot_nach % 360]})"
+        return t
+
+
+_RICHTUNG = {0: "oben", 90: "rechts", 180: "unten", 270: "links"}
+
+
+def _bewegungskosten(neu: Layout, ist: dict, preis_m: float, preis_drehung: float) -> float:
+    k = 0.0
+    for m in neu.moebel:
+        a = ist.get(m.name)
+        if a is None:
+            continue
+        k += preis_m * math.dist((m.x, m.y), (a[0], a[1]))
+        if m.rot % 360 != a[2] % 360 and not m.gehoert_zu:
+            k += preis_drehung
+    return k
+
+
+def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterationen: int = 2500,
+               neustarts: int = 3, preis_pro_meter: float = 4.0, preis_drehung: float = 3.0,
+               seed: Optional[int] = None, ausgabe: bool = True):
+    """Verbessert die JETZIGE Einrichtung mit möglichst wenig Umstellen.
+
+    Jeder Meter Verschieben kostet `preis_pro_meter` Punkte, jede Drehung `preis_drehung` –
+    ein Möbel wird also nur bewegt, wenn es dadurch deutlich besser wird.
+    Rückgabe: (neues Layout, Ergebnis, Liste der Änderungen, Ergebnis vorher)
+    """
+    rng = random.Random(seed)
+    ist_pos = {m.name: (m.x, m.y, m.rot) for m in ist.moebel}
+    e_ist = bewerte(ist, gewichte)
+
+    def kosten(lay, erg):
+        return erg.kosten + _bewegungskosten(lay, ist_pos, preis_pro_meter, preis_drehung)
+
+    bestes_g, k_best_g, e_best_g = ist.kopie(), kosten(ist, e_ist), e_ist
+
+    # 1) Systematisch: jedes bewegliche Möbel probeweise an jede Wand / jede Position (10-cm-Raster)
+    for _ in range(2):
+        verbessert = False
+        for m in _beweglich(bestes_g):
+            if m.ist_deckenobjekt:
+                continue
+            for wand in WAENDE:
+                L = bestes_g.raum.wandlaenge(wand)
+                halb = m.breite / 2
+                pos = halb
+                while pos <= L - halb + 1e-9:
+                    for tausch in (False, True):     # einzelnen Nachttisch auch auf die andere Seite
+                        test = bestes_g.kopie()
+                        kinder = [k for k in test.moebel if k.gehoert_zu == m.name and k.seite in ("links", "rechts")]
+                        if tausch:
+                            if len(kinder) != 1:
+                                continue
+                            kinder[0].seite = "rechts" if kinder[0].seite == "links" else "links"
+                        an_wand_setzen(test.nach_name(m.name), test, wand, pos)
+                        kinder_platzieren(test)
+                        e_t = bewerte(test, gewichte)
+                        k_t = kosten(test, e_t)
+                        if k_t < k_best_g - 1e-6:
+                            bestes_g, k_best_g, e_best_g, verbessert = test, k_t, e_t, True
+                    pos += 0.1
+        if not verbessert:
+            break
+    start = bestes_g.kopie()
+
+    # 2) Simulated Annealing zum Feinschliff
+    t_start, t_ende = 3.0, 0.02
+    for lauf in range(neustarts):
+        aktuell, e_akt = start.kopie(), e_best_g
+        k_akt = kosten(aktuell, e_akt)
+        bestes, k_best, e_best = aktuell, k_akt, e_akt
+        for i in range(iterationen):
+            anteil = 1 - i / iterationen
+            T = t_start * (t_ende / t_start) ** (i / iterationen)
+            neu = _nachbar(aktuell, rng, 0.25 + 0.5 * anteil)
+            e_neu = bewerte(neu, gewichte)
+            k_neu = kosten(neu, e_neu)
+            if k_neu < k_akt or rng.random() < math.exp(-(k_neu - k_akt) / T):
+                aktuell, e_akt, k_akt = neu, e_neu, k_neu
+                if k_akt < k_best:
+                    bestes, k_best, e_best = aktuell, k_akt, e_akt
+        if ausgabe:
+            print(f"  Lauf {lauf + 1}/{neustarts}: Score {e_best.score:5.1f}"
+                  f"{'' if e_best.machbar else ' (NICHT machbar)'}")
+        if k_best < k_best_g:
+            bestes_g, k_best_g, e_best_g = bestes, k_best, e_best
+
+    # Unnötige Mini-Bewegungen zurücknehmen (Möbel zurückstellen, wenn es nichts verschlechtert)
+    for m in bestes_g.moebel:
+        a = ist_pos[m.name]
+        if (m.x, m.y, m.rot) == a or m.gehoert_zu:
+            continue
+        test = bestes_g.kopie()
+        t = test.nach_name(m.name)
+        t.x, t.y, t.rot = a
+        kinder_platzieren(test)
+        e_t = bewerte(test, gewichte)
+        if e_t.machbar and kosten(test, e_t) <= k_best_g + 1e-6:
+            bestes_g, k_best_g, e_best_g = test, kosten(test, e_t), e_t
+
+    aenderungen = []
+    for m in bestes_g.moebel:
+        x0, y0, r0 = ist_pos[m.name]
+        if m.gehoert_zu:        # Nachttisch & Co. drehen nur, wenn das Elternmöbel gedreht wird
+            p = bestes_g.nach_name(m.gehoert_zu)
+            if p is not None and p.rot % 360 == ist_pos[p.name][2] % 360:
+                r0 = m.rot
+        if math.dist((m.x, m.y), (x0, y0)) > 0.08 or (r0 % 360 != m.rot % 360):
+            gruende = sorted({b.text for bs in e_ist.befunde.values() for b in bs if b.moebel == m.name})
+            if m.gehoert_zu and not gruende:
+                gruende = [f"wandert mit {m.gehoert_zu}"]
+            aenderungen.append(Aenderung(m.name, m.typ, (round(x0, 2), round(y0, 2)), (round(m.x, 2), round(m.y, 2)),
+                                         r0, m.rot, gruende))
+    return bestes_g, e_best_g, aenderungen, e_ist

@@ -112,6 +112,17 @@ def maske_aus_erkennung(e: Erkennung, W: int, H: int) -> np.ndarray:
     return np.asarray(m, dtype=bool)
 
 
+def _am_bildrand(maske: np.ndarray, rand: int = 3, anteil: float = 0.02) -> bool:
+    """Berührt die Maske den linken, rechten oder unteren Bildrand deutlich?"""
+    H, W = maske.shape
+    hoehe_px = max(1, int(maske.any(1).sum()))
+    breite_px = max(1, int(maske.any(0).sum()))
+    links = maske[:, :rand].any(1).sum() / hoehe_px
+    rechts = maske[:, -rand:].any(1).sum() / hoehe_px
+    unten = maske[-rand:, :].any(0).sum() / breite_px
+    return max(links, rechts, unten) > anteil * 10
+
+
 def _doppelte_entfernen(erk: list[Erkennung], masken: list[np.ndarray], schwelle: float = 0.6):
     """Ein Objekt wird oft mehrfach erkannt (z. B. Bett als 'bed' UND 'sofa').
     Überdeckt eine Bodenmöbel-Maske eine andere zu >60 %, bleibt nur die sicherere."""
@@ -245,12 +256,35 @@ class Vermessung:
     hinweise: list[str] = field(default_factory=list)
     wandpunkte: Optional[np.ndarray] = None    # für die Kontrollgrafik (Raumkoordinaten)
     bodenpunkte: Optional[np.ndarray] = None
+    # für die Rückprojektion ins Foto (fengshui/foto_korrektur.py)
+    kamera: Optional[Kamera] = None
+    geometrie: Optional[dict] = None           # n, d, e1, e2, rot, links, unten
+    erkennungen: list = field(default_factory=list)
+    masken: list = field(default_factory=list)
+    quelle: dict = field(default_factory=dict) # Möbelname -> Index in erkennungen/masken
+    tiefe: Optional[np.ndarray] = None
+
+    def raum_zu_kamera(self, x: float, y: float, h: float = 0.0) -> np.ndarray:
+        """Punkt im Grundriss (x, y) in Höhe h -> 3D-Kamerakoordinaten."""
+        g = self.geometrie
+        r = np.array([x + g["links"], y + g["unten"]])
+        a, b = r @ g["rot"].T
+        return a * g["e1"] + b * g["e2"] + (h - g["d"]) * g["n"]
+
+    def raum_zu_pixel(self, x: float, y: float, h: float = 0.0) -> tuple[float, float, float]:
+        X = self.raum_zu_kamera(x, y, h)
+        k = self.kamera
+        z = float(X[2])
+        if z <= 1e-3:
+            return float("nan"), float("nan"), z
+        return float(k.fx * X[0] / z + k.cx), float(k.fy * X[1] / z + k.cy), z
 
     def fuer_optimierer(self) -> Layout:
         """Gleiche Möbel, aber Nachttische/Couchtisch hängen am Hauptmöbel (für optimiere())."""
         lay = self.layout.kopie()
         betten = [m for m in lay.moebel if m.typ == "bett"]
         sofas = [m for m in lay.moebel if m.typ == "sofa"]
+        tische = [m for m in lay.moebel if m.typ == "esstisch"]
         seite = 0
         for m in lay.moebel:
             if m.typ == "nachttisch" and betten:
@@ -258,13 +292,15 @@ class Vermessung:
                 seite += 1
             if m.typ == "couchtisch" and sofas:
                 m.gehoert_zu, m.seite, m.abstand = sofas[0].name, "vorne", 0.45
+            if m.typ == "stuhl" and tische:
+                m.gehoert_zu = min(tische, key=lambda t: (t.x - m.x) ** 2 + (t.y - m.y) ** 2).name
         return lay
 
 
 def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennungen: list[Erkennung],
              raumtyp: str = "schlafzimmer", kamera_in_ecke: bool = True, foto_von_tuer: bool = False,
              tuer_kalibrierung: bool = True, masken: Optional[list[np.ndarray]] = None,
-             raumhoehe: Optional[float] = None) -> Vermessung:
+             raumhoehe: Optional[float] = None, randobjekte_fest: bool = True) -> Vermessung:
     """Kernfunktion: Tiefenkarte + Erkennungen → Raum und Möbel in Metern."""
     H, W = rgb_form
     hinweise: list[str] = []
@@ -370,7 +406,8 @@ def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennun
 
     moebel: list[Moebel] = []
     zaehler: dict[str, int] = {}
-    for e, m in zip(erkennungen, masken):
+    quelle: dict[str, int] = {}
+    for idx, (e, m) in enumerate(zip(erkennungen, masken)):
         sel = m[vv, uu]
         if sel.sum() < 15:
             continue
@@ -402,8 +439,10 @@ def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennun
                                                 bruestung=round(brue, 2), hoehe=round(oben - brue, 2)))
             continue
 
-        if e.typ not in STANDARD_MASSE or e.typ in NICHT_ALS_MOEBEL or e.typ == "teppich":
+        if e.typ not in STANDARD_MASSE or e.typ == "teppich":
             continue
+        if e.typ in NICHT_ALS_MOEBEL and not any(x.typ == "esstisch" for x in erkennungen):
+            continue        # Schreibtischstuhl usw. gehört zum Tisch, kein eigenes Möbel
         zaehler[e.typ] = zaehler.get(e.typ, 0) + 1
         name = e.typ.capitalize() + (f" {zaehler[e.typ]}" if zaehler[e.typ] > 1 else "")
         b0, t0, h0 = STANDARD_MASSE[e.typ]
@@ -426,6 +465,14 @@ def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennun
             else:
                 mo.x, mo.y = raum.breite - t0 / 2, mitte
             moebel.append(mo)
+            quelle[name] = idx
+            continue
+
+        if e.typ in ("pendelleuchte", "ventilator", "tischleuchte"):     # Decke bzw. auf einem Möbel
+            mo = Moebel(e.typ, b0, t0, h0, name=name, rund=True)
+            mo.x, mo.y = round(float(np.median(pts[:, 0])), 2), round(float(np.median(pts[:, 1])), 2)
+            moebel.append(mo)
+            quelle[name] = idx
             continue
 
         # ---- Bodenmöbel
@@ -471,7 +518,11 @@ def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennun
                     mo.x = mo.x if nx_ == 0 else (1.0 if wand == "links" else raum.breite - 1.0)
                     mo.y = mo.y if ny_ == 0 else (1.0 if wand == "unten" else raum.tiefe - 1.0)
         mo.x, mo.y = round(mo.x, 2), round(mo.y, 2)
+        if randobjekte_fest and _am_bildrand(m):
+            mo.fest = True
+            hinweise.append(f"{name} ist vom Bildrand abgeschnitten – Maße unsicher, wird nicht verschoben.")
         moebel.append(mo)
+        quelle[name] = idx
 
     # ---------- 5. Tür hinter der Kamera?
     if foto_von_tuer and not raum.tueren:
@@ -496,15 +547,19 @@ def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennun
 
     lay = Layout(raum, moebel, Bewohner())
     _aufraeumen(lay)
+    geo = {"n": n, "d": float(d), "e1": e1, "e2": e2, "rot": rot,
+           "links": float(grenzen["links"]), "unten": float(grenzen["unten"])}
     return Vermessung(lay, (round(float(kam_pos[0]), 2), round(float(kam_pos[1]), 2)),
                       (float(blick[0]), float(blick[1])), round(kamerahoehe, 2), gesehen, geschaetzt, skala,
-                      hinweise, raumkoord(wxy), raumkoord(xy[boden_sel]))
+                      hinweise, raumkoord(wxy), raumkoord(xy[boden_sel]),
+                      kam, geo, erkennungen, masken, quelle, tiefe * skala)
 
 
 def _aufraeumen(lay: Layout, runden: int = 12) -> None:
     """Messrauschen ausgleichen: Möbel in den Raum schieben, kleine Überlappungen auflösen."""
     raum = lay.raum
-    boden = [m for m in lay.moebel if not m.ist_wandobjekt]
+    from .modell import FLACH
+    boden = [m for m in lay.moebel if not m.ist_wandobjekt and m.typ not in FLACH]
 
     def klemmen(m):
         dx, dy = m.ausdehnung
