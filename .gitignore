@@ -27,3 +27,6 @@ fotos_raus/
 # halbfertige Modell-Downloads
 .*.ts.*
 *.teil
+
+# macOS
+.DS_Store
