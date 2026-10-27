@@ -39,6 +39,7 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 | 🪄 | `foto_korrigieren.py` → Run | **Foto rein → dasselbe Foto mit korrigierten Möbeln raus** (nur Problem-Möbel werden minimal verschoben) |
 | ✨ | `zimmer_aus_foto.py` → Run | **Zimmer aus einem Foto vermessen** – keine Meter eintippen: Raummaße, Tür/Fenster, Möbelpositionen → Bewertung + Optimierung |
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
+| ⬆ | `push.py` → Run | Änderungen mit GitHub synchronisieren: holt erst die Änderungen deines Teams, dann Commit + Push |
 | – | `regeln_exportieren.py` | schreibt die gesamte Regelbasis als `regelbasis.md` / `regelbasis.json` |
 
 Deine **aktuelle** Einrichtung bewerten: in `mein_zimmer.py` bei den Möbeln `x`, `y`, `rot` angeben –
