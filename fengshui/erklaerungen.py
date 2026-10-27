@@ -189,6 +189,9 @@ FOTO_ERKLAERUNG: dict[str, str] = {
     "F17": "Viele kleine Schränke = viele spitze Ecken.",
     "F18": "Sitzkreis und Couchtisch schaffen Gemeinschaft; der TV soll nicht die Mitte sein.",
     "F19": "Gerade Anzahl gleicher Stühle = Fairness und Gemeinschaft.",
+    "F20": "Offene Messer stehen für Aggression.",
+    "F21": "Sichtbarer Müll stört den Eindruck von Fülle und Sauberkeit.",
+    "F22": "Über dem Kamin wird der Fernseher zum Mittelpunkt des Raums.",
 }
 
 # Welche Regeln brauchen welche Objekte im Foto/Grundriss?
@@ -199,4 +202,13 @@ BRAUCHT = {
 
 
 def erklaerung(rid: str) -> dict[str, str]:
-    return ERKLAERUNG.get(rid, {"warum": "", "abhilfe": ""})
+    """Begründung zu einer Prüfung – eigener Text oder die verknüpfte Buchregel."""
+    if rid in ERKLAERUNG:
+        return ERKLAERUNG[rid]
+    from .buchregeln import regeln_zu_pruefung
+    br = regeln_zu_pruefung(rid)
+    if br:
+        return {"warum": br[0].warum, "abhilfe": br[0].abhilfe}
+    from .regeln import REGELN
+    r = next((r for r in REGELN if r.id == rid), None)
+    return {"warum": r.beschreibung if r else "", "abhilfe": ""}

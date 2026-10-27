@@ -72,6 +72,9 @@ WORLD_KLASSEN = {
     "shower": "dusche",
     "bathroom sink": "waschbecken",
     "bunk bed": "etagenbett",
+    "knife": "messer",
+    "trash can": "muell",
+    "fireplace": "kamin",
 }
 
 # COCO-Klassen (normales YOLO)  ->  interner Typ
@@ -84,7 +87,7 @@ COCO_KLASSEN = {
 }
 
 # Klassen, die oft verwechselt werden (Kamin -> TV, Tischlampe -> Hängelampe …), brauchen mehr Sicherheit
-MIN_CONF = {"tv": 0.35, "pendelleuchte": 0.35, "ventilator": 0.4, "aquarium": 0.4, "uhr": 0.35,
+MIN_CONF = {"messer": 0.35, "muell": 0.3, "kamin": 0.35, "tv": 0.35, "pendelleuchte": 0.35, "ventilator": 0.4, "aquarium": 0.4, "uhr": 0.35,
             "kaktus": 0.4, "handy": 0.35, "tuer": 0.3, "fenster": 0.25}
 
 KLEINKRAM = {"kleinkram", "buch", "kleidung", "karton"}
@@ -383,6 +386,18 @@ def foto_empfehlungen(erk: list[Erkennung], groesse: tuple[int, int], raumtyp: s
         if st % 2 == 1:
             add("!", "F19", f"{st} Stühle erkannt – gerade Anzahl, alle gleich, keiner an den Tischecken.")
 
+    # F20 Messer offen (Küche)
+    if anz["messer"] and raumtyp in ("kueche", "studio", "esszimmer"):
+        add("✗", "F20", "Messer liegen offen – Messer stehen für Aggression; in Schubladen aufbewahren.")
+    # F21 Mülleimer sichtbar
+    if anz["muell"]:
+        add("!", "F21", "Mülleimer ist sichtbar – Müll und Recycling möglichst verstecken.")
+    # F22 Fernseher über dem Kamin
+    for tv in n.get("tv", []):
+        for k in n.get("kamin", []):
+            if _h_ueberlapp(tv, k) > 0.4 and _ueber(tv, k, 0.1):
+                add("✗", "F22", "Fernseher über dem Kamin – dort bekommt er zu viel Bedeutung; lieber niedrig in eine Ecke.")
+
     if betten and not any(x.stufe == "✗" for x in H):
         add("✓", "F00", "Keine groben Probleme im Bild erkannt.")
     add("ℹ", "F99", "Foto-Hinweise sind Schätzungen aus 2D-Bildlage. Für Kommandoposition, Türlinie und Chi-Bahn "
@@ -450,6 +465,8 @@ def zu_profil(erk: list[Erkennung], raumtyp: str = "schlafzimmer") -> dict:
         "unordnung": sum(anz[t] for t in KLEINKRAM) >= 6,
         "kleiderschrank": "mehrere" if anz["schrank"] >= 2 else ("freistehend" if anz["schrank"] else None),
         "pflanzenarten": (["kaktus"] if anz["kaktus"] else []),
+        "messer_sichtbar": anz["messer"] > 0,
+        "muell_sichtbar": anz["muell"] > 0,
     }
 
 

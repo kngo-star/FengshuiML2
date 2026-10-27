@@ -332,8 +332,10 @@ def vorher_nachher(rgb: np.ndarray, erkl: np.ndarray, korrigiert: np.ndarray, le
 def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "ausgabe",
                      bewohner=None, gewichte: Optional[dict] = None, kamera_in_ecke: bool = True,
                      foto_von_tuer: bool = False, bekannte_breite: Optional[float] = None,
-                     preis_pro_meter: float = 4.0, zeigen: bool = True):
+                     preis_pro_meter: float = 4.0, zeigen: bool = True, profil: Optional[dict] = None):
     """Foto rein → analysiertes, korrigiertes Foto raus.
+
+    profil: optionale Angaben (Farben, Licht, Bett …) – ergänzen, was das Foto nicht zeigt.
 
     raumtyp="auto" erkennt den Raum selbst (Bett -> Schlafzimmer, Sofa -> Wohnzimmer, WC -> Bad …).
     Speichert <name>_korrigiert.jpg (verschobene Möbel), <name>_aenderungen.jpg (Umrisse + Pfeile),
@@ -361,7 +363,10 @@ def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "au
     from .foto import foto_empfehlungen
     hinweise = [(h.stufe, h.regel, h.text) for h in
                 foto_empfehlungen(erk, (rgb.shape[1], rgb.shape[0]), v.layout.raum.raumtyp)]
-    analyse = analysiere(ist, e_ist, neu, e_neu, aenderungen, hinweise)
+    from .foto import zu_profil
+    profil_foto = {k: w for k, w in zu_profil(erk, v.layout.raum.raumtyp).items() if w is not None}
+    profil_foto.update(profil or {})
+    analyse = analysiere(ist, e_ist, neu, e_neu, aenderungen, hinweise, profil=profil_foto)
     stamm = os.path.splitext(os.path.basename(pfad))[0]
     dateien = {"korrigiert": os.path.join(ausgabe_ordner, f"{stamm}_korrigiert.jpg"),
                "aenderungen": os.path.join(ausgabe_ordner, f"{stamm}_aenderungen.jpg"),

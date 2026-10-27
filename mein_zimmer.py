@@ -87,4 +87,39 @@ PROFIL = {
     "notizzettel_an_wand": False,
     "unordnung": False,
     "persoenlichkeit": "ruhig",
+    # ---- weitere Angaben für die Buch-Regelbasis (weglassen, wenn unbekannt) ----
+    # "bett_typ": "normal",                 # "normal" | "niedrig" | "himmelbett"
+    # "nachttisch_material": "holz",        # "glas" wird bemängelt
+    # "bett_ungemacht": False,
+    # "esstisch_material": "holz",          # "glas" wird bemängelt
+    # "esstisch_form": "rund",              # "rund" | "oval" | "quadratisch" | "rechteckig" | "unregelmaessig"
+    # "stuehle": "gleich",                  # "gleich" | "verschieden" | "plastik"
+    # "schreibtisch_oberflaeche": "matt",   # "glaenzend" wird bemängelt
+    # "offene_regale": False,
+    # "buecher_liegend": False,
+    # "schranktueren_glas": False,
+    # "leuchten_form": "rund",              # "rund" | "kegel" | "eckig"
+    # "deckenleuchte": "rund",              # "flach_eckig" wird bemängelt
+    # "arbeitsleuchte_im_schlafzimmer": False,
+    # "spots_auf_sitzplatz": False,
+    # "fernseher_hoch_aufgehaengt": False,
+    # "fernseher_ueber_kamin": False,
+    # "familienfotos_hoch": False,
+    # "kunst_als_fueller": False,
+    # "bagua_spiegel_innen": False,
+    # "windspiel_ueber_bett": False,
+    # "spiegel_mangelhaft": False,          # gesprungen, verzerrt, Spiegelfliesen
+    # "tote_pflanzen": False,
+    # "wasser_stehend": False,
+    # "aquarium_ungepflegt": False,
+    # "messer_sichtbar": False,
+    # "muell_sichtbar": False,
+    # "wc_deckel_offen": False,
+    # "wc_an_bettwand": False,
+    # "bad_lueftung": True,
+    # "eingang_dunkel": False,
+    # "schuhe_herum": False,
+    # "besen_muell_im_eingang": False,
+    # "tuer_oeffnet_aussen": False,
+    # "esstisch_leer": False,
 }

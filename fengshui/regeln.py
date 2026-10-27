@@ -1213,6 +1213,300 @@ def _ba5(layout):
     return bef
 
 
+# ============================================================ WEITERE BUCHREGELN (Version 4)
+_FENSTER_PFLICHT = {"schlafzimmer", "kinderzimmer", "gaestezimmer", "buero", "esszimmer", "kueche", "studio",
+                    "wohnzimmer"}
+
+
+@regel("C08", "Tür und Fenster auf verschiedenen Wänden",
+       "Chi kann nicht durch dieselbe Öffnung herein und hinaus: Ein Raum braucht Tür UND Fenster, am besten auf "
+       "verschiedenen Wänden. Schlafzimmer und Arbeitsräume nie ohne Fenster.",
+       "Kap. 2 Chi, Kap. 4 Schlafzimmer/Büro/Küche", "chi", 2.0)
+def _c08(layout):
+    raum = layout.raum
+    fenster = [o for o in raum.oeffnungen if o.ist_fenster]
+    if not fenster:
+        if raum.raumtyp in ("flur", "bad"):
+            return [Befund(0.3, "Raum ohne Fenster – gut lüften, Licht an die Wände")]
+        s = 1.0 if raum.raumtyp in _FENSTER_PFLICHT else 0.5
+        return [Befund(s, f"{raum.raumtyp.capitalize()} ohne Fenster – Chi kann nicht zirkulieren")]
+    tueren = raum.tueren
+    if tueren and all(f.wand == t.wand for f in fenster for t in tueren):
+        return [Befund(0.4, "Tür und Fenster liegen auf derselben Wand – der hintere Raum bekommt wenig Chi")]
+    return []
+
+
+@regel("C09", "Spiegel spiegelt keine Tür und keinen Fernseher",
+       "Spiegel verdoppeln, was sie zeigen: Eine gespiegelte Tür lässt das Chi hinausfließen, ein gespiegelter "
+       "Fernseher verdoppelt die Unruhe. Spiegel sollen Schönes zeigen.", "Kap. 4 Wohnzimmer/Esszimmer, Kap. 5",
+       "chi", 1.2)
+def _c09(layout):
+    bef = []
+    raum = layout.raum
+    for sp in layout.finde("spiegel"):
+        p = (sp.x, sp.y)
+        for t in raum.tueren:
+            if t.wand == VEKTOR_WAND[(-sp.vorne[0], -sp.vorne[1])]:
+                continue
+            if g.winkel_zu(p, sp.vorne, t.mitte(raum)) < 30:
+                bef.append(Befund(0.6, f"{sp.name} spiegelt die {t.typ} ({t.wand})", sp.name))
+        for tv in layout.finde("tv"):
+            if g.winkel_zu(p, sp.vorne, (tv.x, tv.y)) < 30:
+                bef.append(Befund(0.4, f"{sp.name} spiegelt {tv.name}", sp.name))
+    return bef
+
+
+@regel("C10", "Kein Windspiel oder Mobile über Bett und Schreibtisch",
+       "Windspiele nehmen Chi auf und bremsen es – richtig in Durchgängen oder bei vielen Fenstern, aber nie über "
+       "Bett oder Schreibtisch.", "Kap. 5 Bewegte Objekte", "chi", 1.0)
+def _c10(layout):
+    bef = []
+    for w in layout.moebel:
+        if w.typ not in ("windspiel", "mobile"):
+            continue
+        for m in _haupt(layout):
+            ziel = g.abstand_punkt_rechteck((w.x, w.y), m.rechteck) < 0.1 if m.typ == "bett" \
+                else math.dist((w.x, w.y), g.personenpunkt(m)) < 0.6
+            if ziel:
+                bef.append(Befund(0.8 if w.typ == "windspiel" else 0.4, f"{w.name} hängt über {m.name}", w.name))
+    return bef
+
+
+@regel("C11", "Religiöse Objekte am richtigen Ort",
+       "Religiöse Objekte gehören in den wichtigsten Raum (Wohnzimmer), nicht ins Schlafzimmer, nicht auf den Boden "
+       "und nicht in einer Linie mit dem Bett.", "Kap. 5 Religiöse Objekte", "zonen", 0.8)
+def _c11(layout):
+    bef = []
+    for a in layout.finde("altar"):
+        if layout.raum.raumtyp in SCHLAFRAEUME:
+            bef.append(Befund(0.6, f"{a.name} steht im Schlafzimmer", a.name))
+        if a.hoehe < 0.3:
+            bef.append(Befund(0.5, f"{a.name} steht auf dem Boden", a.name))
+        for b in layout.finde("bett"):
+            if g.winkel_zu(g.personenpunkt(b), b.vorne, (a.x, a.y)) < 20:
+                bef.append(Befund(0.6, f"{a.name} steht in einer Linie mit {b.name}", a.name))
+    return bef
+
+
+@regel("K17", "Nachttische als ausgewogenes Paar",
+       "Drache und Tiger: Zwei Nachttische mit gleichem visuellem Gewicht geben dem Bett Halt zu beiden Seiten. "
+       "Sie sollen nicht höher als die Matratze aufragen.", "Kap. 2 Fünf Tiere, Kap. 4 Schlafzimmer – Nachttische",
+       "kommando", 0.8, raumtypen={"schlafzimmer", "gaestezimmer", "studio"})
+def _k17(layout):
+    bef = []
+    nachttische = layout.finde("nachttisch")
+    for b in layout.finde("bett"):
+        eigene = [n for n in nachttische if n.gehoert_zu == b.name or g.abstand_rechtecke(n.rechteck, b.rechteck) < 0.3]
+        einseitig_an_wand = max((_zone_frei(layout, z, [b] + _kinder(layout, b)) for z in _bett_seitenzonen(b, 0.12)),
+                                default=0) > 0.6
+        if not eigene:
+            bef.append(Befund(0.4, f"{b.name} hat keine Nachttische", b.name))
+        elif len(eigene) == 1 and not einseitig_an_wand:
+            bef.append(Befund(0.5, f"{b.name} hat nur auf einer Seite einen Nachttisch", b.name))
+        elif len(eigene) >= 2:
+            a, c = eigene[0], eigene[1]
+            if abs(a.hoehe - c.hoehe) > 0.15 or abs(a.breite * a.tiefe - c.breite * c.tiefe) > 0.12:
+                bef.append(Befund(0.3, "Die Nachttische sind sehr unterschiedlich (Ungleichgewicht)", b.name))
+        for n in eigene:
+            if n.hoehe > b.hoehe + 0.25:
+                bef.append(Befund(0.3, f"{n.name} ragt über das Bett auf ({n.hoehe:.2f} m)", n.name))
+    return bef
+
+
+@regel("W01", "Zwei Sofas gegenüber brauchen einen Tisch",
+       "Zwei Sofas, die sich über eine leere Fläche ansehen, wirken konfrontativ und formell – ein Couchtisch "
+       "dazwischen entschärft die Spannung.", "Kap. 4 Wohnzimmer – Sofa", "stil", 1.0, raumtypen={"wohnzimmer", "studio"})
+def _w01(layout):
+    bef = []
+    sofas = layout.finde("sofa")
+    tische = layout.finde("couchtisch") + layout.finde("beistelltisch")
+    for i, a in enumerate(sofas):
+        for b in sofas[i + 1:]:
+            gegenueber = a.vorne == tuple(-v for v in b.vorne) and g.winkel_zu((a.x, a.y), a.vorne, (b.x, b.y)) < 30
+            if not gegenueber:
+                continue
+            mitte = ((a.x + b.x) / 2, (a.y + b.y) / 2)
+            if not any(g.abstand_punkt_rechteck(mitte, t.rechteck) < 0.5 for t in tische):
+                bef.append(Befund(0.8, f"{a.name} und {b.name} stehen sich ohne Tisch gegenüber", a.name))
+    return bef
+
+
+@regel("W02", "Couchtisch als Anker",
+       "Ohne Couchtisch schwebt das Wohnzimmer um eine Leere. Der Tisch verbindet die Sitzplätze, vermittelt im "
+       "Gespräch und steht – mit Blumen oder Obst darauf – für Fülle.", "Kap. 4 Wohnzimmer – Couchtisch", "stil", 0.8,
+       raumtypen={"wohnzimmer", "studio"})
+def _w02(layout):
+    if not layout.finde("sofa"):
+        return []
+    if layout.finde("couchtisch"):
+        return []
+    if layout.finde("beistelltisch"):
+        return [Befund(0.2, "Nur Beistelltisch – ein Couchtisch in der Mitte würde den Raum verankern")]
+    return [Befund(0.7, "Kein Couchtisch: Die Sitzgruppe hat keine Mitte")]
+
+
+@regel("W03", "Sofa nicht allein",
+       "Erst mehrere Sitzplätze bilden eine Gemeinschaft: Das Sofa mit Sessel, Bank oder Hocker ergänzen.",
+       "Kap. 4 Wohnzimmer – Sofa", "stil", 0.5, raumtypen={"wohnzimmer", "studio"})
+def _w03(layout):
+    if layout.finde("sofa") and not any(layout.finde(t) for t in ("sessel", "hocker", "bank")):
+        return [Befund(0.6, "Das Sofa steht allein – ein Sessel oder Hocker schließt den Sitzkreis")]
+    return []
+
+
+@regel("B01", "Bücher in Reichweite des Arbeitsplatzes",
+       "Das Bücherregal soll vom Arbeitsplatz gut erreichbar sein; Nachschlagewerke hinter dir geben Rückhalt.",
+       "Kap. 4 Büro – Regale", "stil", 0.5, raumtypen={"buero", "studio", "schlafzimmer", "kinderzimmer"})
+def _b01(layout):
+    bef = []
+    regale = layout.finde("regal")
+    for d in layout.finde("schreibtisch"):
+        if regale:
+            dist = min(math.dist(g.personenpunkt(d), (r.x, r.y)) for r in regale)
+            if dist > 2.2:
+                bef.append(Befund(min(1.0, (dist - 2.2) / 2 + 0.3), f"Das Regal ist {dist:.1f} m vom {d.name} entfernt",
+                                  d.name))
+    return bef
+
+
+@regel("B02", "Geteiltes Büro: gleich große Tische",
+       "Arbeiten mehrere Gleichgestellte im Raum, sollen alle gleich große Tische und keine schlechte Position "
+       "haben – sonst entstehen Konflikte.", "Kap. 4 Büro – geteilter Arbeitsplatz", "zonen", 0.8,
+       raumtypen={"buero"})
+def _b02(layout):
+    tische = layout.finde("schreibtisch")
+    if len(tische) < 2:
+        return []
+    fl = [t.breite * t.tiefe for t in tische]
+    if max(fl) - min(fl) > 0.15:
+        return [Befund(0.5, "Die Schreibtische sind unterschiedlich groß (Ungleichgewicht)")]
+    return []
+
+
+@regel("B03", "Tagesbett im Büro nicht zur Tür",
+       "Die beste Position bleibt dem Schreibtisch; ein Sofa oder Tagesbett soll aber nicht mit dem Fußende zur "
+       "Tür zeigen.", "Kap. 4 Büro – Sitz- und Ruhemöbel", "kommando", 0.6, raumtypen={"buero"})
+def _b03(layout):
+    bef = []
+    for m in layout.finde("tagesbett") + layout.finde("sofa"):
+        for t in layout.raum.tueren:
+            if g.schaut_zur_oeffnung(m, t):
+                bef.append(Befund(0.6, f"{m.name} zeigt direkt zur Tür", m.name))
+    return bef
+
+
+@regel("KU5", "Ofen nicht auf Sitzplätze richten",
+       "Der Ofen strahlt sein Feuer nach vorne ab – Sitzplätze gehören nicht direkt davor.",
+       "Kap. 4 Küche – Herd und Ofen", "chi", 1.0, raumtypen={"kueche", "studio"})
+def _ku5(layout):
+    bef = []
+    sitze = [m for m in layout.moebel if m.typ in ("stuhl", "sofa", "sessel", "esstisch", "bank")]
+    for h in layout.finde("herd"):
+        zone = _zone_vorne(h, 1.2)
+        for s in sitze:
+            if g.ueberlappung(zone, s.rechteck) > 0.02:
+                bef.append(Befund(0.6, f"{s.name} steht direkt vor dem {h.name}", h.name))
+    return bef
+
+
+@regel("E07", "Keine lange Bank am Esstisch",
+       "Besonders in langen Esszimmern bremsen Stühle mit Armlehnen das schnelle Chi; lange Bänke verstärken es.",
+       "Kap. 4 Esszimmer – lange Räume", "stil", 0.5, raumtypen={"esszimmer", "wohnzimmer", "studio", "kueche"})
+def _e07(layout):
+    bef = []
+    for b in layout.finde("bank"):
+        for t in layout.finde("esstisch"):
+            if g.abstand_rechtecke(b.rechteck, t.rechteck) < 0.6 and b.breite >= 1.2:
+                bef.append(Befund(0.5, f"{b.name} steht als lange Bank am {t.name}", b.name))
+    return bef
+
+
+_ANKER = {"schlafzimmer": ("bett",), "kinderzimmer": ("bett",), "gaestezimmer": ("bett", "tagesbett"),
+          "wohnzimmer": ("sofa",), "studio": ("sofa", "bett"), "esszimmer": ("esstisch",),
+          "buero": ("schreibtisch",), "kueche": ("herd",), "bad": ("badewanne", "dusche")}
+
+
+@regel("S08", "Erster Eindruck: Hauptmöbel verankert den Blick",
+       "Der Raum soll vom Eingang aus gut aussehen; das Hauptmöbel (Bett, Sofa, Schreibtisch, Esstisch) zeigt "
+       "sofort, wofür der Raum da ist, und verankert den Blick.", "Kap. 5 Eindrücke – der erste Blick", "stil", 0.6)
+def _s08(layout):
+    raum = layout.raum
+    t = raum.haupttuer
+    typen = _ANKER.get(raum.raumtyp)
+    if t is None or not typen:
+        return []
+    anker = [m for m in layout.moebel if m.typ in typen]
+    if not anker:
+        return []
+    p = g.punkt_vor_oeffnung(t, raum, 0.4)
+    blick = WAND_NORMALE[t.wand]
+    hindernisse = [m.rechteck for m in _boden(layout) if m.hoehe >= 1.4 and m.typ not in typen]
+    for m in anker:
+        if g.winkel_zu(p, blick, (m.x, m.y)) < 80 and g.sichtlinie_frei(p, (m.x, m.y), hindernisse):
+            return []
+    return [Befund(0.6, f"Vom Eingang aus sieht man das Hauptmöbel ({anker[0].name}) nicht", anker[0].name)]
+
+
+@regel("S09", "Kein Fernseher über dem Kamin",
+       "Über dem Kamin bekommt der Fernseher zu viel Bedeutung – er wird zum Altar des Raums.",
+       "Kap. 4 Wohnzimmer – Fernseher", "stil", 1.0, raumtypen={"wohnzimmer", "studio"})
+def _s09(layout):
+    bef = []
+    for tv in layout.finde("tv"):
+        for k in layout.finde("kamin"):
+            if g.abstand_rechtecke(tv.rechteck, k.rechteck) < 0.3 and VEKTOR_WAND[tv.hinten] == VEKTOR_WAND[k.hinten]:
+                bef.append(Befund(1.0, f"{tv.name} steht/hängt am Kamin", tv.name))
+    return bef
+
+
+@regel("T01", "Tierkäfige an den richtigen Ort",
+       "Vögel, Nager, Fische und Reptilien nicht in Küche (Dämpfe), Bad (Feuchte) oder Schlafzimmer (Unruhe in der "
+       "Nacht); Käfig an eine Wand für Schutz, weg vom Eingang mit seinem Trubel.", "Kap. 4 Haustiere", "zonen", 0.8)
+def _t01(layout):
+    bef = []
+    raum = layout.raum
+    for k in layout.finde("kaefig") + layout.finde("aquarium"):
+        if raum.raumtyp in ("kueche", "bad") or (raum.raumtyp in SCHLAFRAEUME and k.typ == "kaefig"):
+            bef.append(Befund(0.8, f"{k.name} im Raum '{raum.raumtyp}'", k.name))
+        if k.typ == "kaefig" and not g.an_wand(k, raum, 0.15):
+            bef.append(Befund(0.4, f"{k.name} steht frei im Raum statt an einer Wand", k.name))
+        t = raum.haupttuer
+        if t is not None and g.abstand_punkt_rechteck(t.mitte(raum), k.rechteck) < 1.2:
+            bef.append(Befund(0.4, f"{k.name} steht direkt am Eingang", k.name))
+    return bef
+
+
+@regel("T02", "Haustiere sehen die Tür",
+       "Tiere suchen ihre Kommandoposition: Eine Hundebox so stellen, dass der Hund sieht, wer hereinkommt; der "
+       "Kratzbaum gehört in deine Nähe.", "Kap. 4 Haustiere", "kommando", 0.5)
+def _t02(layout):
+    bef = []
+    t = layout.raum.haupttuer
+    for h in layout.finde("hundebox"):
+        if t is not None and g.winkel_zu((h.x, h.y), h.vorne, t.mitte(layout.raum)) > 100:
+            bef.append(Befund(0.6, f"Aus der {h.name} sieht der Hund die Tür nicht", h.name))
+    sitze = _haupt(layout)
+    for kb in layout.finde("kratzbaum"):
+        if sitze and min(g.abstand_rechtecke(kb.rechteck, s.rechteck) for s in sitze) > 2.5:
+            bef.append(Befund(0.3, f"{kb.name} steht weit weg von deinem Platz", kb.name))
+    return bef
+
+
+@regel("T03", "Futter und Katzenklo getrennt",
+       "Futter- und Toilettenplatz der Tiere voneinander und vom Schlafplatz trennen; das Katzenklo braucht einen "
+       "privaten Ort.", "Kap. 4 Haustiere", "zonen", 0.5)
+def _t03(layout):
+    bef = []
+    for k in layout.finde("katzenklo"):
+        for f in layout.finde("futternapf"):
+            if g.abstand_rechtecke(k.rechteck, f.rechteck) < 1.5:
+                bef.append(Befund(0.7, f"{k.name} steht direkt neben {f.name}", k.name))
+        for b in layout.finde("bett") + layout.finde("tierbett"):
+            if g.abstand_rechtecke(k.rechteck, b.rechteck) < 1.5:
+                bef.append(Befund(0.4, f"{k.name} steht nahe am {b.name}", k.name))
+    return bef
+
+
 # ============================================================ Auswertung
 def anwendbare_regeln(raumtyp: str) -> list[Regel]:
     return [r for r in REGELN if r.gilt_fuer(raumtyp)]

@@ -44,9 +44,9 @@ _HIMMEL_UHRZEIGER = ["N", "O", "S", "W"]
 # Möbeltypen, die an der Wand hängen (keine Bodenfläche)
 WANDOBJEKTE = {"spiegel", "bild", "wandregal", "pinnwand", "uhr"}
 # Möbeltypen ohne "Hindernis"-Wirkung
-FLACH = {"teppich", "tischleuchte", "pendelleuchte", "ventilator"}
+FLACH = {"teppich", "tischleuchte", "pendelleuchte", "ventilator", "windspiel", "mobile", "futternapf"}
 # Hängen an der Decke (keine Bodenfläche, frei im Raum platzierbar)
-DECKENOBJEKTE = {"pendelleuchte", "ventilator"}
+DECKENOBJEKTE = {"pendelleuchte", "ventilator", "windspiel", "mobile"}
 LAMPEN = {"stehleuchte", "tischleuchte", "pendelleuchte"}
 # Hauptmöbel, für die die Kommandoposition gilt (Buch: Bett, Schreibtisch, Sofa)
 KOMMANDO_MOEBEL = {"bett", "schreibtisch", "sofa"}

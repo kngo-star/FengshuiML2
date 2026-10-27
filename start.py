@@ -25,6 +25,17 @@ ENDUNGEN = (".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp", ".tif", ".tiff",
 AUTOMATISCH_OEFFNEN = True
 WARTEN_SEKUNDEN = 2
 
+# Optional: Angaben, die man auf dem Foto nicht sieht – dann prüft die Regelbasis auch diese Buchregeln.
+# Weglassen oder auf None setzen, was du nicht weißt. Alle Schlüssel: siehe mein_zimmer.py → PROFIL.
+PROFIL = {
+    # "lichtfarbe_kelvin": [2700, 2700],   # Kelvin aller Leuchtmittel im Raum
+    # "leuchtmittel": "opal",              # "opal" (diffus) | "klar"
+    # "bettkopfteil": "gepolstert",        # "massiv" | "gepolstert" | "gitter" | "keins"
+    # "wandfarbe": "weiss",
+    # "kleiderschrank_vollgestopft": False,
+    # "smartphone_am_bett": True,
+}
+
 
 def oeffnen(pfad: str) -> None:
     """Ergebnis mit dem Standardprogramm des Computers anzeigen."""
@@ -54,7 +65,7 @@ def verarbeite(pfad: str) -> None:
     print(f"\n📷 {os.path.basename(pfad)} – wird analysiert …")
     start = time.time()
     try:
-        r = foto_korrigieren(pfad, "auto", ausgabe_ordner=AUSGANG, gewichte=Personalisierung().gewichte,
+        r = foto_korrigieren(pfad, "auto", ausgabe_ordner=AUSGANG, gewichte=Personalisierung().gewichte, profil=PROFIL,
                              zeigen=False)
     except Exception as fehler:
         text = (f"Das Foto konnte nicht ausgewertet werden:\n{fehler}\n\n"

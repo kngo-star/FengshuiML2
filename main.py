@@ -43,6 +43,18 @@ def main():
         print(bericht(lay, erg))
         zeichne(lay, f"Variante {i} – Score {erg.score:.1f}", datei=f"ausgabe/variante_{i}.png", zeigen=False)
 
+    # Ausführliche Analyse mit der Buch-Regelbasis: Ist-Zustand → beste Variante
+    from fengshui.analyse import analysiere
+    if any(m.x or m.y for m in layout.moebel):          # jetzige Einrichtung → beste Variante
+        analyse = analysiere(layout, bewerte(layout, gewichte), ergebnisse[0][0], ergebnisse[0][1], profil=PROFIL)
+    else:                                               # nur die beste Variante analysieren
+        analyse = analysiere(ergebnisse[0][0], ergebnisse[0][1], profil=PROFIL)
+    print()
+    print(analyse.text())
+    with open("ausgabe/analyse.txt", "w", encoding="utf-8") as f:
+        f.write(analyse.text())
+    print("\n(Ausführliche Analyse gespeichert in ausgabe/analyse.txt)")
+
     print()
     print("=== Ausstattungs-Check (Farben, Licht, Bett, Pflanzen, Ordnung) ===")
     print(drucke_ausstattung(layout.raum, PROFIL))

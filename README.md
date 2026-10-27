@@ -167,3 +167,27 @@ Jedes Ergebnis enthält jetzt (`…_bericht.txt` und Vorher/Nachher-Grafik):
 - Neue Positionen nur im **sichtbaren** Teil des Raums (hinter der Kamera könnten Möbel oder Türen sein).
 - Gedrehte Möbel: alte Stelle wird entfernt, neue Stelle als grüne 3D-Box „hierhin (gedreht)“.
 - Runde Tische werden an ihrer Form erkannt (keine falschen „spitzen Ecken“).
+
+## 📖 Regelbasis aus dem Buch (Version 4) – `fengshui/buchregeln.py`
+
+Das ganze Buch ist jetzt als **Wissensbasis aus WENN-DANN-Regeln** erfasst (322 Regeln, alle Kapitel:
+Grundlagen, Anwendung, Wohnung wählen, Eingang, Wohnzimmer, Esszimmer, Küche, Büro, Schlafzimmer, Bad,
+gemeinsame Räume, Eindruck, Ordnung, Licht, Farben, Kunst & Objekte, Spiegel & Kristalle, Wasser, Pflanzen,
+Garten & Balkon). Jede Regel hat:
+
+| Feld | Bedeutung |
+|---|---|
+| `wenn` / `dann` | Situation → Empfehlung |
+| `warum` / `abhilfe` | Begründung aus dem Buch / was tun, wenn man nicht umstellen kann |
+| `prio` | 1 wichtig · 2 mittel · 3 klein |
+| `raeume`, `objekte` | wofür die Regel gilt |
+| `pruefung` | automatische Prüfung: `grundriss:K04` (Geometrie, 77 Prüfungen in `regeln.py`), `foto:F02` (YOLO) |
+| `profil` | deklarative Bedingungen auf deinen Angaben, z. B. `("leuchtmittel", "==", "klar")` |
+
+**219 Regeln werden automatisch geprüft** (Grundriss, Foto oder Profil), die übrigen erscheinen als Tipp-Checkliste
+im Bericht. Der Bericht zeigt zu jedem Problem die Buchregel (WENN → DANN, Warum, Abhilfe, „Siehe auch“),
+was schon gut ist, was sich nicht prüfen ließ und die passenden Tipps für den Raum.
+
+`python regeln_exportieren.py` erzeugt **`regelbasis.md`** (lesbarer Katalog) und **`regelbasis.json`**
+(maschinenlesbar – z. B. für ein Sprachmodell oder eigene ML-Experimente).
+Neue Regel ergänzen: einen `R(...)`-Eintrag in `buchregeln.py` hinzufügen – fertig.
