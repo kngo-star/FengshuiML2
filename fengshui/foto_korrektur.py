@@ -87,6 +87,20 @@ LAMA_URL = "https://github.com/enesmsahin/simple-lama-inpainting/releases/downlo
 _LAMA = {}
 
 
+def _herunterladen(url: str, ziel: str) -> None:
+    """Download mit `requests` (nutzt certifi) – umgeht das bekannte Mac-Zertifikatsproblem von urllib."""
+    import os
+    import requests
+    print(f"  Lade LaMa-Modell (~200 MB, einmalig) …")
+    tmp = ziel + ".teil"
+    with requests.get(url, stream=True, timeout=60) as r:
+        r.raise_for_status()
+        with open(tmp, "wb") as f:
+            for block in r.iter_content(1 << 20):
+                f.write(block)
+    os.replace(tmp, ziel)
+
+
 def _lama(rgb: np.ndarray, maske: np.ndarray) -> np.ndarray:
     """LaMa (Large Mask Inpainting) – füllt große Lücken realistisch. Lädt ~200 MB beim ersten Mal."""
     import os
@@ -95,7 +109,7 @@ def _lama(rgb: np.ndarray, maske: np.ndarray) -> np.ndarray:
         pfad = os.environ.get("LAMA_MODELL") or os.path.join(torch.hub.get_dir(), "big-lama.pt")
         if not os.path.exists(pfad):
             os.makedirs(os.path.dirname(pfad), exist_ok=True)
-            torch.hub.download_url_to_file(LAMA_URL, pfad)
+            _herunterladen(LAMA_URL, pfad)
         geraet = "cuda" if torch.cuda.is_available() else "cpu"
         _LAMA["m"] = torch.jit.load(pfad, map_location=geraet).eval()
         _LAMA["g"] = geraet
@@ -120,7 +134,7 @@ def luecke_fuellen(rgb: np.ndarray, maske: np.ndarray, methode: str = "auto") ->
         except Exception as fehler:
             if methode == "lama":
                 raise
-            print(f"  (LaMa nicht verfügbar: {fehler.__class__.__name__} – nutze OpenCV-Auffüllen)")
+            print(f"  (LaMa nicht verfügbar: {fehler.__class__.__name__}: {fehler} – nutze OpenCV-Auffüllen)")
     return cv2.inpaint(rgb, m, 9, cv2.INPAINT_TELEA)
 
 

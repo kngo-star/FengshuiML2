@@ -23,3 +23,7 @@ ausgabe/erkennungen.json
 # Foto-Eingang/-Ausgang (start.py) – private Fotos
 fotos_rein/
 fotos_raus/
+
+# halbfertige Modell-Downloads
+.*.ts.*
+*.teil
