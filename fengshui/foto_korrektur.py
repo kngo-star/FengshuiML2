@@ -77,6 +77,13 @@ def _zeichne_box(draw, pts, farbe, breite=3, gestrichelt=False):
             draw.line([(x0, y0), (x1, y1)], fill=farbe, width=breite)
 
 
+def _fuelle_box(draw, pts, farbe):
+    """Seitenflächen und Deckel einer 3D-Box halbtransparent füllen."""
+    flaechen = [(4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    for f in flaechen:
+        draw.polygon([pts[i] for i in f], fill=farbe)
+
+
 def _kontur(maske: np.ndarray) -> list:
     import cv2
     k, _ = cv2.findContours(maske.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -155,7 +162,7 @@ def korrigiere_foto(rgb: np.ndarray, v: Vermessung, neu: Layout, aenderungen: li
         return float(np.median(tiefe[sel])) if sel.any() else 99.0
 
     # ---------- 1. was wird ausgeschnitten und wohin gesetzt?
-    plaene, nur_umriss, legende = [], [], []
+    plaene, nur_umriss, legende, entfernen = [], [], [], []
     for nr, a in enumerate(aenderungen, 1):
         legende.append(f"{nr}. {a.text()}" + (f" – weil: {a.gruende[0]}" if a.gruende else ""))
         idx = v.quelle.get(a.name)
@@ -167,6 +174,8 @@ def korrigiere_foto(rgb: np.ndarray, v: Vermessung, neu: Layout, aenderungen: li
         u1, v1, z1 = v.raum_zu_pixel(m_neu.x, m_neu.y, 0.0)
         if a.gedreht or not (z0 > 0.2 and z1 > 0.2):
             nur_umriss.append((nr, a))
+            if z0 > 0.2:
+                entfernen.append(idx)          # alte Stelle trotzdem leeren, neue Stelle als 3D-Box zeigen
             continue
         s = z0 / z1
         if not 0.4 < s < 2.5:
@@ -178,6 +187,8 @@ def korrigiere_foto(rgb: np.ndarray, v: Vermessung, neu: Layout, aenderungen: li
     weg = np.zeros((H, W), bool)
     for p in plaene:
         weg |= v.masken[p["idx"]]
+    for idx in entfernen:
+        weg |= v.masken[idx]
     bild = luecke_fuellen(rgb, weg, fuellen) if weg.any() else rgb.copy()
 
     # ---------- 3. Ausschnitte an die neue Stelle setzen (weit weg zuerst)
@@ -191,7 +202,7 @@ def korrigiere_foto(rgb: np.ndarray, v: Vermessung, neu: Layout, aenderungen: li
         belegt_tiefe[maske[..., 0] > 0.5] = np.minimum(belegt_tiefe[maske[..., 0] > 0.5], p["z1"])
 
     # ---------- 4. Verdeckung: nicht bewegte Möbel, die näher sind, wieder darüberlegen
-    bewegt = {p["idx"] for p in plaene}
+    bewegt = {p["idx"] for p in plaene} | set(entfernen)
     for idx, msk in enumerate(v.masken):
         if idx in bewegt or v.erkennungen[idx].typ in ("fenster", "tuer", "teppich", "bild", "spiegel"):
             continue
@@ -201,13 +212,32 @@ def korrigiere_foto(rgb: np.ndarray, v: Vermessung, neu: Layout, aenderungen: li
             bild[vorne] = rgb[vorne]
 
     # ---------- 5. Umrisse für gedrehte / nicht verschiebbare Möbel (auch im Ergebnisbild)
-    erg_pil = Image.fromarray(bild)
-    d_erg = ImageDraw.Draw(erg_pil)
+    erg_pil = Image.fromarray(bild).convert("RGBA")
+    schicht = Image.new("RGBA", erg_pil.size, (0, 0, 0, 0))
+    d_erg = ImageDraw.Draw(schicht)
+    ausserhalb = []
     for nr, a in nur_umriss:
         pts = _box_ecken(v, neu_m[a.name])
+        sichtbar = pts is not None and any(0 <= x < W and 0 <= y < H for x, y in pts)
+        if not sichtbar:
+            ausserhalb.append(a.name)
+            continue
         if pts:
-            _zeichne_box(d_erg, pts, GRUEN, breite=max(2, W // 400), gestrichelt=True)
-            d_erg.text(pts[4], f"{a.name}{' ↻ drehen' if a.gedreht else ''}", fill=GRUEN, font=_schrift(max(12, W // 60)))
+            _fuelle_box(d_erg, pts, GRUEN + (95,))
+            _zeichne_box(d_erg, pts, GRUEN + (255,), breite=max(2, W // 350))
+            oben = min(pts, key=lambda p: p[1])
+            txt = f"{a.name} hierhin" + (" (gedreht)" if a.gedreht else "")
+            f = _schrift(max(14, W // 45))
+            x0, y0 = oben[0], max(0, oben[1] - f.size - 10)
+            d_erg.rectangle(d_erg.textbbox((x0, y0), txt, font=f), fill=(0, 0, 0, 170))
+            d_erg.text((x0, y0), txt, fill=(255, 255, 255, 255), font=f)
+    if ausserhalb:
+        f = _schrift(max(14, W // 50))
+        txt = ", ".join(ausserhalb) + ": neue Stelle liegt außerhalb des Fotos – siehe Grundriss"
+        box = d_erg.textbbox((12, H - f.size - 22), txt, font=f)
+        d_erg.rectangle((box[0] - 6, box[1] - 6, box[2] + 6, box[3] + 6), fill=(0, 0, 0, 180))
+        d_erg.text((12, H - f.size - 22), txt, fill=GELB + (255,), font=f)
+    erg_pil = Image.alpha_composite(erg_pil, schicht).convert("RGB")
 
     # ---------- 6. Erklär-Version
     erkl = Image.fromarray(rgb).convert("RGB")
@@ -236,28 +266,62 @@ def korrigiere_foto(rgb: np.ndarray, v: Vermessung, neu: Layout, aenderungen: li
     return np.asarray(erg_pil), np.asarray(erkl), legende
 
 
+def zeichne_grundriss_vergleich(ax, v: Vermessung, neu: Layout, aenderungen: list):
+    """Draufsicht: alte Positionen rot gestrichelt, neue Positionen gefüllt, Kamera als Dreieck."""
+    from matplotlib.patches import Rectangle
+    from .visualisierung import zeichne
+    zeichne(neu, "", ax=ax, chi=True)
+    alt = {m.name: m for m in v.layout.moebel}
+    for nr, a in enumerate(aenderungen, 1):
+        m = alt.get(a.name)
+        if m is None:
+            continue
+        x1, y1, x2, y2 = m.rechteck
+        ax.add_patch(Rectangle((x1, y1), x2 - x1, y2 - y1, fill=False, ec="#e63946", lw=2, ls="--", zorder=6))
+        n = next(x for x in neu.moebel if x.name == a.name)
+        ax.annotate("", xy=(n.x, n.y), xytext=(m.x, m.y), zorder=7,
+                    arrowprops=dict(arrowstyle="->", color="#f4a261", lw=2.2))
+        ax.text(m.x, m.y, str(nr), color="white", fontsize=8, ha="center", va="center", zorder=8,
+                bbox=dict(boxstyle="circle,pad=0.25", fc="#222", ec="#f4a261"))
+    kx, ky = v.kamera_pos
+    ax.plot(kx, ky, marker="^", ms=10, color="#e63946", zorder=9)
+    ax.annotate("", xy=(kx + v.kamera_blick[0] * 0.5, ky + v.kamera_blick[1] * 0.5), xytext=(kx, ky),
+                arrowprops=dict(arrowstyle="->", color="#e63946", lw=1.6), zorder=9)
+    ax.set_title("Grundriss: rot gestrichelt = jetzt, gefüllt = neu, ▲ = Kamera", fontsize=10.5)
+
+
 def vorher_nachher(rgb: np.ndarray, erkl: np.ndarray, korrigiert: np.ndarray, legende: list[str],
-                   score_vorher: float, score_nachher: float, datei: Optional[str] = None, zeigen: bool = True):
-    """Drei Bilder nebeneinander + Liste der Änderungen."""
+                   score_vorher: float, score_nachher: float, datei: Optional[str] = None, zeigen: bool = True,
+                   analyse_zeilen: Optional[list[str]] = None, nicht_pruefbar: Optional[list[str]] = None,
+                   grundriss: Optional[tuple] = None):
+    """Drei Bilder nebeneinander + Änderungen, Probleme mit Begründung und Grundriss."""
     import matplotlib.pyplot as plt
     import textwrap
-    fig = plt.figure(figsize=(17, 6.6))
-    gs = fig.add_gridspec(2, 3, height_ratios=[5, 1.3])
+    fig = plt.figure(figsize=(18, 11))
+    gs = fig.add_gridspec(2, 3, height_ratios=[4.2, 3.8])
     for i, (b, t) in enumerate([(rgb, f"Vorher – Score {score_vorher:.0f}/100"),
-                                (erkl, "Was sich ändert (rot = jetzt, grün = neu)"),
+                                (erkl, "Was sich ändert (rot = jetzt, grün = neu, gelb = Weg)"),
                                 (korrigiert, f"Nachher – Score {score_nachher:.0f}/100")]):
         ax = fig.add_subplot(gs[0, i])
         ax.imshow(b)
-        ax.set_title(t, fontsize=12)
+        ax.set_title(t, fontsize=12.5, fontweight="bold")
         ax.axis("off")
-    ax = fig.add_subplot(gs[1, :])
+
+    zeilen = ["UMSTELLEN:"] + (list(legende) if legende else ["Nichts muss umgestellt werden."]) + [""]
+    zeilen += ["WAS NICHT GUT IST – UND WARUM (laut Buch):"] + (analyse_zeilen or ["Keine Probleme gefunden."])
+    if nicht_pruefbar:
+        zeilen += ["", "NICHT PRÜFBAR:"] + [f"? {n.split(':')[0]}" for n in nicht_pruefbar]
+    text = []
+    for z in zeilen:
+        text += textwrap.wrap(z, 128, subsequent_indent="     ") or [""]
+    ax = fig.add_subplot(gs[1, :2])
     ax.axis("off")
-    text = "\n".join(textwrap.shorten(l, 170) for l in legende) if legende else \
-        "Alles gut – keine Möbel müssen verschoben werden."
-    ax.text(0.01, 0.95, text, va="top", fontsize=10.5, family="DejaVu Sans")
+    ax.text(0.0, 1.0, "\n".join(text[:26]), va="top", fontsize=9.6, family="DejaVu Sans", linespacing=1.35)
+    if grundriss is not None:
+        zeichne_grundriss_vergleich(fig.add_subplot(gs[1, 2]), *grundriss)
     fig.tight_layout()
     if datei:
-        fig.savefig(datei, dpi=130)
+        fig.savefig(datei, dpi=120)
     if zeigen:
         plt.show()
     else:
@@ -290,8 +354,14 @@ def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "au
     ist = v.fuer_optimierer()
     if bewohner is not None:
         ist.bewohner = bewohner
-    neu, e_neu, aenderungen, e_ist = korrigiere(ist, gewichte, preis_pro_meter=preis_pro_meter, ausgabe=False)
+    neu, e_neu, aenderungen, e_ist = korrigiere(ist, gewichte, preis_pro_meter=preis_pro_meter, ausgabe=False,
+                                                zusatzkosten=v.unsichtbar_strafe)
     korr, erkl, legende = korrigiere_foto(rgb, v, neu, aenderungen)
+    from .analyse import analysiere
+    from .foto import foto_empfehlungen
+    hinweise = [(h.stufe, h.regel, h.text) for h in
+                foto_empfehlungen(erk, (rgb.shape[1], rgb.shape[0]), v.layout.raum.raumtyp)]
+    analyse = analysiere(ist, e_ist, neu, e_neu, aenderungen, hinweise)
     stamm = os.path.splitext(os.path.basename(pfad))[0]
     dateien = {"korrigiert": os.path.join(ausgabe_ordner, f"{stamm}_korrigiert.jpg"),
                "aenderungen": os.path.join(ausgabe_ordner, f"{stamm}_aenderungen.jpg"),
@@ -299,7 +369,8 @@ def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "au
     Image.fromarray(korr).save(dateien["korrigiert"], quality=92)
     Image.fromarray(erkl).save(dateien["aenderungen"], quality=92)
     vorher_nachher(rgb, erkl, korr, legende, e_ist.score, e_neu.score, datei=dateien["vorher_nachher"],
-                   zeigen=zeigen)
+                   zeigen=zeigen, analyse_zeilen=analyse.kurz(7), nicht_pruefbar=analyse.nicht_pruefbar,
+                   grundriss=(v, neu, aenderungen))
     return {"vermessung": v, "vorher": e_ist, "nachher": e_neu, "layout_neu": neu,
             "aenderungen": aenderungen, "legende": legende, "korrigiert": korr, "erklaerung": erkl,
-            "raumtyp": v.layout.raum.raumtyp, "dateien": dateien}
+            "raumtyp": v.layout.raum.raumtyp, "dateien": dateien, "analyse": analyse}

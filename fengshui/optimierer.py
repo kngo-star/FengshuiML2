@@ -270,8 +270,10 @@ def _bewegungskosten(neu: Layout, ist: dict, preis_m: float, preis_drehung: floa
 
 def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterationen: int = 2500,
                neustarts: int = 3, preis_pro_meter: float = 4.0, preis_drehung: float = 3.0,
-               seed: Optional[int] = None, ausgabe: bool = True):
+               seed: Optional[int] = None, ausgabe: bool = True, zusatzkosten=None):
     """Verbessert die JETZIGE Einrichtung mit möglichst wenig Umstellen.
+
+    zusatzkosten: optionale Funktion Layout -> Kosten (z. B. "nicht in unbekannte Bereiche stellen").
 
     Jeder Meter Verschieben kostet `preis_pro_meter` Punkte, jede Drehung `preis_drehung` –
     ein Möbel wird also nur bewegt, wenn es dadurch deutlich besser wird.
@@ -282,7 +284,8 @@ def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterati
     e_ist = bewerte(ist, gewichte)
 
     def kosten(lay, erg):
-        return erg.kosten + _bewegungskosten(lay, ist_pos, preis_pro_meter, preis_drehung)
+        k = erg.kosten + _bewegungskosten(lay, ist_pos, preis_pro_meter, preis_drehung)
+        return k + (zusatzkosten(lay) if zusatzkosten else 0.0)
 
     bestes_g, k_best_g, e_best_g = ist.kopie(), kosten(ist, e_ist), e_ist
 

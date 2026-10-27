@@ -66,17 +66,15 @@ def verarbeite(pfad: str) -> None:
         return
 
     v = r["vermessung"]
+    an = r["analyse"]
     print(f"   Raum: {r['raumtyp']}, ca. {v.layout.raum.breite:.1f} × {v.layout.raum.tiefe:.1f} m "
-          f"– fertig in {time.time() - start:.0f} s")
-    print(f"   Score vorher {r['vorher'].score:.0f} → nachher {r['nachher'].score:.0f}")
-    for zeile in r["legende"] or ["Alles gut – nichts muss verschoben werden."]:
-        print("   ", zeile)
+          f"– fertig in {time.time() - start:.0f} s\n")
+    print("\n".join("   " + z for z in an.text().splitlines()))
     with open(os.path.join(AUSGANG, f"{stamm}_bericht.txt"), "w", encoding="utf-8") as f:
         from fengshui.bewertung import bericht
-        f.write(f"Raumtyp: {r['raumtyp']}\nScore vorher {r['vorher'].score:.0f} → nachher {r['nachher'].score:.0f}\n\n")
-        f.write("\n".join(r["legende"]) + "\n\nHinweise zur Vermessung:\n")
+        f.write(an.text() + "\n\nHinweise zur Vermessung:\n")
         f.write("\n".join("• " + h for h in v.hinweise) + "\n\n")
-        f.write(bericht(r["layout_neu"], r["nachher"]))
+        f.write("Technischer Bericht (neue Anordnung):\n" + bericht(r["layout_neu"], r["nachher"]))
     oeffnen(r["dateien"]["vorher_nachher"])
 
 

@@ -398,8 +398,8 @@ def raumtyp_erkennen(erk: list[Erkennung]) -> str:
         return "bad"
     if da & {"herd", "spuele", "kuehlschrank"} and not da & {"bett", "sofa"}:
         return "kueche"
-    if "bett" in da and da & {"sofa", "herd", "esstisch"}:
-        return "studio"
+    if "bett" in da and da & {"herd", "spuele", "kuehlschrank"}:
+        return "studio"                 # Bett + Küche im selben Raum
     if "etagenbett" in da:
         return "kinderzimmer"
     if "bett" in da:

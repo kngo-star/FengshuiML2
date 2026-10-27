@@ -156,3 +156,14 @@ Licht (L01–L03), Esszimmer (E01–E06), geteiltes Schlafzimmer (G01–G03), St
 Neue Möbeltypen: `stuhl` (mit `gehoert_zu="Esstisch"` automatisch um den Tisch verteilt), `stehleuchte`,
 `tischleuchte`, `pendelleuchte`, `herd`, `spuele`, `kuehlschrank`, `wc`, `badewanne`, `dusche`,
 `waschbecken`, `etagenbett`.
+
+## Ausführliche Analyse mit Begründung (Version 3)
+Jedes Ergebnis enthält jetzt (`…_bericht.txt` und Vorher/Nachher-Grafik):
+- **Was nicht gut ist – und warum**: jede Regel mit der Begründung aus dem Buch (Kommandoposition, Chi,
+  Sha-Chi durch spitze Ecken, Spiegel wie Türen …) und **Abhilfe**, falls du nicht umstellen kannst
+  (`fengshui/erklaerungen.py`).
+- **Was schon gut ist** und **was sich nicht prüfen ließ** (z. B. keine Tür im Foto).
+- **Grundriss von oben**: alt (rot gestrichelt) → neu, mit Kamerastandort.
+- Neue Positionen nur im **sichtbaren** Teil des Raums (hinter der Kamera könnten Möbel oder Türen sein).
+- Gedrehte Möbel: alte Stelle wird entfernt, neue Stelle als grüne 3D-Box „hierhin (gedreht)“.
+- Runde Tische werden an ihrer Form erkannt (keine falschen „spitzen Ecken“).

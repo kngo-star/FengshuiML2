@@ -118,6 +118,25 @@ def maske_aus_erkennung(e: Erkennung, W: int, H: int) -> np.ndarray:
     return np.asarray(m, dtype=bool)
 
 
+def _ist_rund(maske: np.ndarray) -> bool:
+    """Grobe Formprüfung: Umriss mit vielen Ecken und ohne lange gerade Kanten -> rund/oval."""
+    try:
+        import cv2
+    except ImportError:
+        return False
+    k, _ = cv2.findContours(maske.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    if not k:
+        return False
+    c = max(k, key=cv2.contourArea)
+    umfang = cv2.arcLength(c, True)
+    if umfang < 40:
+        return False
+    ecken = len(cv2.approxPolyDP(c, 0.02 * umfang, True))
+    flaeche = cv2.contourArea(c)
+    kreis = 4 * np.pi * flaeche / (umfang ** 2)     # 1 = Kreis, Quadrat ≈ 0.785
+    return ecken >= 9 or kreis > 0.8
+
+
 def _am_bildrand(maske: np.ndarray, rand: int = 3, anteil: float = 0.02) -> bool:
     """Berührt die Maske den linken, rechten oder unteren Bildrand deutlich?"""
     H, W = maske.shape
@@ -269,6 +288,47 @@ class Vermessung:
     masken: list = field(default_factory=list)
     quelle: dict = field(default_factory=dict) # Möbelname -> Index in erkennungen/masken
     tiefe: Optional[np.ndarray] = None
+
+    def sichtbar(self, rechteck: tuple[float, float, float, float], zelle: float = 0.1) -> float:
+        """Anteil (0..1) einer Grundfläche, den das Foto tatsächlich gezeigt hat.
+        Bereiche hinter der Kamera sind unbekannt – dort könnten Möbel oder Türen sein."""
+        if getattr(self, "_sicht", None) is None:
+            raum = self.layout.raum
+            nx, ny = int(np.ceil(raum.breite / zelle)) + 1, int(np.ceil(raum.tiefe / zelle)) + 1
+            g = np.zeros((nx, ny), bool)
+            pts = self.bodenpunkte if self.bodenpunkte is not None else np.zeros((0, 2))
+            ix = np.clip((pts[:, 0] / zelle).astype(int), 0, nx - 1)
+            iy = np.clip((pts[:, 1] / zelle).astype(int), 0, ny - 1)
+            g[ix, iy] = True
+            for m in self.layout.moebel:                 # Flächen unter erkannten Möbeln sind auch "gesehen"
+                if m.ist_wandobjekt or m.ist_deckenobjekt:
+                    continue
+                x1, y1, x2, y2 = m.rechteck
+                g[max(0, int(x1 / zelle)):int(x2 / zelle) + 1, max(0, int(y1 / zelle)):int(y2 / zelle) + 1] = True
+            try:                                        # kleine Lücken schließen (Wandfuß, Schatten)
+                import cv2
+                g = cv2.dilate(g.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+            except ImportError:
+                pass
+            self._sicht, self._zelle = g, zelle
+        g, z = self._sicht, self._zelle
+        x1, y1, x2, y2 = rechteck
+        a = g[max(0, int(x1 / z)):max(int(x1 / z) + 1, int(np.ceil(x2 / z))),
+              max(0, int(y1 / z)):max(int(y1 / z) + 1, int(np.ceil(y2 / z)))]
+        return float(a.mean()) if a.size else 0.0
+
+    def unsichtbar_strafe(self, lay: Layout) -> float:
+        """Kosten für Möbel, die in einen nicht gesehenen Bereich gestellt würden."""
+        k = 0.0
+        alt = {m.name: m for m in self.layout.moebel}
+        for m in lay.moebel:
+            if m.ist_wandobjekt or m.ist_deckenobjekt:
+                continue
+            a = alt.get(m.name)
+            if a is not None and abs(a.x - m.x) < 0.05 and abs(a.y - m.y) < 0.05:
+                continue                                 # nicht bewegt
+            k += 40.0 * max(0.0, 0.8 - self.sichtbar(m.rechteck))
+        return k
 
     def raum_zu_kamera(self, x: float, y: float, h: float = 0.0) -> np.ndarray:
         """Punkt im Grundriss (x, y) in Höhe h -> 3D-Kamerakoordinaten."""
@@ -524,6 +584,8 @@ def vermesse(rgb_form: tuple[int, int], tiefe: np.ndarray, kam: Kamera, erkennun
                     mo.x = mo.x if nx_ == 0 else (1.0 if wand == "links" else raum.breite - 1.0)
                     mo.y = mo.y if ny_ == 0 else (1.0 if wand == "unten" else raum.tiefe - 1.0)
         mo.x, mo.y = round(mo.x, 2), round(mo.y, 2)
+        if e.typ in ("couchtisch", "esstisch", "nachttisch", "schreibtisch") and _ist_rund(m):
+            mo.rund = True
         if randobjekte_fest and _am_bildrand(m):
             mo.fest = True
             hinweise.append(f"{name} ist vom Bildrand abgeschnitten – Maße unsicher, wird nicht verschoben.")
