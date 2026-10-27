@@ -11,7 +11,7 @@ In PyCharm: Rechtsklick auf start.py → Run 'start'. Danach einfach Fotos in de
   5. legt das korrigierte Foto in `fotos_raus` und öffnet es direkt.
 
 Es läuft weiter und wartet auf neue Fotos, bis du oben auf ■ (Stop) klickst.
-Erlaubt: .jpg, .jpeg, .png, .heic (iPhone). Fotos bleiben auf deinem Computer (nicht auf GitHub).
+Erlaubt: .jpg, .jpeg, .png, .heic (iPhone), .tiff, .webp, .bmp. Fotos bleiben auf deinem Computer (nicht auf GitHub).
 """
 import os
 import subprocess
@@ -21,7 +21,7 @@ import traceback
 
 EINGANG = "fotos_rein"
 AUSGANG = "fotos_raus"
-ENDUNGEN = (".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp")
+ENDUNGEN = (".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp", ".tif", ".tiff", ".bmp")
 AUTOMATISCH_OEFFNEN = True
 WARTEN_SEKUNDEN = 2
 
@@ -91,7 +91,14 @@ def main():
     print("=" * 64)
     oeffnen(os.path.abspath(EINGANG))      # Ordner im Finder öffnen, damit man Fotos hineinziehen kann
     gemeldet = False
+    ignoriert: set[str] = set()
     while True:
+        for f in os.listdir(EINGANG):
+            if not f.startswith(".") and not f.lower().endswith(ENDUNGEN) and f not in ignoriert \
+                    and os.path.isfile(os.path.join(EINGANG, f)):
+                print(f"\n⚠ '{f}' wird übersprungen – kein Bildformat, das ich lesen kann "
+                      f"(erlaubt: {', '.join(ENDUNGEN)})")
+                ignoriert.add(f)
         neu = sorted(f for f in os.listdir(EINGANG)
                      if f.lower().endswith(ENDUNGEN) and not f.startswith(".")
                      and not erledigt(os.path.splitext(f)[0]))
