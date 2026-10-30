@@ -220,9 +220,32 @@ Mängel, die die Regelbasis noch nicht kannte – daraus wurden neue Regeln in `
 | H09 Spiegel und Bilder nicht verdecken | hart | „Kleiderschrank deckt den Spiegel“ |
 | H10 Kein hohes Möbel vor dem Fenster | hart (verschärft S03) | „Kleiderschrank deckt Fenster“ |
 | H11 Arbeitsplatz frei benutzbar | hart | „Schrank / Monstera blockiert den Schreibtisch“ |
-| P01 Schreibtisch an einer Wand | weich, lernbar | „Schreibtisch ist nicht an der Wand“ (das Buch sieht das anders → das Modell lernt, wie wichtig es dir ist) |
 
 Die Noten aus Runde 1 werden **nicht** fürs Training benutzt (`daten/runde1_antworten.json`), weil die Vorschläge
 diese Mängel hatten. `lernen.py` erzeugt jetzt nur noch Vorschläge, die alle harten Regeln erfüllen: die Hälfte
 optimal nach dem aktuellen Modell, die andere Hälfte optimal für einen zufällig veränderten „Geschmack“.
 Ein Test (`test_runde1_feedback_wird_erkannt`) prüft, dass jeder kommentierte Mangel jetzt eine Regel verletzt.
+
+## 📐 Grundsatz: Buch + Menschenverstand · 🌳 Gradient Boosting (Version 7)
+
+**Regeln:** Es gelten die Regeln aus dem Buch (77 Prüfungen, jede mit einer Buchregel verknüpft). Regeln mit
+**Menschenverstand** (`herkunft="verstand"`, derzeit H08–H11) gibt es nur dort, wo das Buch nichts sagt – nie gegen
+das Buch. Darum wurde P01 „Schreibtisch an einer Wand“ wieder entfernt (Geschmack, widerspricht der Kommandoposition).
+
+**Noten:** Bewertungen ändern die Regeln nicht mehr (`GEWICHTE_ANPASSEN = False` in `fengshui/ml.py`). Sie dienen
+zum **Prüfen** (Rangkorrelation Regel-Score ↔ Note) und um **Lücken** zu finden (`bewertungen_importieren.py`,
+`lernen.py`, Teil 3 in `auswertung.py`). Grund: Die Noten widersprachen sich zwischen Personen (ρ = −0,26) und
+teils bei einer Person (Noten vs. Kommentare).
+
+**Gradient Boosting (`surrogat_trainieren.py` → Run, ca. 3 min, braucht scikit-learn):**
+Die Regelbasis bewertet 6000 automatisch erzeugte Grundrisse (= Labels ohne Handarbeit). Gradient Boosting lernt,
+den Score und „machbar ja/nein“ aus 72 geometrischen Merkmalen vorherzusagen – Vergleich mit Mittelwert, linearer
+Regression und Random Forest per **10-facher Kreuzvalidierung**, dazu Lernkurve, Merkmalswichtigkeit und ein
+Nutzentest (Vorauswahl aus 2000 Kandidaten). Ergebnis: `auswertung/surrogat_bericht.md`.
+
+| Modell | MAE (Score-Punkte) | R² |
+|---|---|---|
+| Mittelwert raten | 5,77 | 0,00 |
+| Lineare Regression | 3,51 | 0,62 |
+| Random Forest | 1,71 | 0,90 |
+| **Gradient Boosting** | **1,18** | **0,95** |

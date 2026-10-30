@@ -35,9 +35,6 @@ ERKLAERUNG: dict[str, dict[str, str]] = {
     "H11": {"warum": "Steht ein Schrank oder eine große Pflanze direkt vor der Tischkante, kann man den Tisch kaum benutzen "
                      "und schaut gegen ein Hindernis.",
             "abhilfe": "Mindestens 40 cm vor der Tischkante frei lassen oder den Tisch umstellen."},
-    "P01": {"warum": "Viele Menschen empfinden einen frei stehenden Schreibtisch als unpraktisch. Das Buch sieht das "
-                     "anders (Kommandoposition) – hier entscheidet dein Geschmack.",
-            "abhilfe": "Schreibtisch mit Vorder- oder Seitenkante an eine Wand stellen, möglichst mit Fenster seitlich."},
     "H07": {"warum": "Spiegel und Bilder brauchen eine echte Wand; über Türen/Fenstern stören sie Licht und Durchgang.",
             "abhilfe": "An eine geschlossene Wandfläche hängen."},
     # ------------------------------------------------------------------ Kommandoposition

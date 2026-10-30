@@ -297,7 +297,7 @@ def test_korrektur_ohne_mini_verschiebungen_und_mit_begruendung():
             assert a.gruende, f"Änderung ohne Grund: {a.text()}"
 
 
-# ================================================================== PRAKTISCHE REGELN (aus Nutzer-Feedback Runde 1)
+# ================================================================== MENSCHENVERSTAND (Lücken im Buch, aus Nutzer-Feedback Runde 1)
 def spiegel():
     return Moebel("spiegel", breite=0.6, tiefe=0.04, hoehe=1.6, name="Spiegel")
 
@@ -342,12 +342,15 @@ def test_H11_arbeitsplatz_frei():
     assert strafe(layout(r, tisch2, pflanze_weit), "H11") == 0
 
 
-def test_P01_schreibtisch_an_einer_wand():
-    r = raum()
-    an_der_wand = layout(r, frei(schreibtisch(), 2.0, r.tiefe - 0.3, 0))   # Vorderkante an der oberen Wand
-    frei_im_raum = layout(r, frei(schreibtisch(), 2.0, 2.0, 0))
-    assert strafe(an_der_wand, "P01") == 0
-    assert strafe(frei_im_raum, "P01") > 0.5
+def test_herkunft_buch_oder_menschenverstand():
+    """Jede Prüfung stammt aus dem Buch (und ist mit einer Buchregel verknüpft) oder ist als Menschenverstand markiert."""
+    verknuepft = {p.split(":", 1)[1] for b in BUCHREGELN for p in b.pruefung if p.startswith("grundriss:")}
+    for r in REGELN:
+        assert r.herkunft in ("buch", "verstand"), r.id
+        if r.herkunft == "buch":
+            assert r.id in verknuepft, f"{r.id} heißt 'Buch', ist aber mit keiner Buchregel verknüpft"
+        else:
+            assert r.kategorie == "hart" or r.gewicht <= 1.0, f"{r.id}: Menschenverstand-Regeln sollen das Buch nicht übertönen"
 
 
 def test_runde1_feedback_wird_erkannt():
@@ -368,3 +371,32 @@ def test_runde1_feedback_wird_erkannt():
         for m in lay.moebel:
             m.x, m.y, m.rot = pos[m.name]["x"], pos[m.name]["y"], pos[m.name]["rot"]
         assert strafe(lay, erwartet[v["nr"]]) > 0, f"Vorschlag {v['nr']}: {erwartet[v['nr']]} schlägt nicht an"
+
+
+# ================================================================== PRÜFEN & GRADIENT BOOSTING
+def test_regel_score_passt_zur_bewertung():
+    """Der Score aus gespeicherten Merkmalen (zum Prüfen der Noten) ist derselbe wie die echte Bewertung."""
+    from fengshui.ml import merkmale, regel_score
+    from mein_zimmer import erstelle_layout
+    lay, erg = optimiere(erstelle_layout(), iterationen=200, neustarts=1, seed=4, anzahl_ergebnisse=1, ausgabe=False)[0]
+    assert abs(regel_score(merkmale(lay)) - erg.score) < 1e-6
+
+
+def test_noten_aendern_die_regeln_nicht():
+    """Grundsatz Buch + Menschenverstand: gespeicherte Noten dürfen die Gewichte nicht verändern."""
+    from fengshui import ml
+    assert ml.GEWICHTE_ANPASSEN is False
+    assert ml.Personalisierung("gibt_es_nicht.json").gewichte is None
+
+
+def test_surrogat_merkmale_vollstaendig():
+    """Gradient-Boosting-Merkmale: feste Länge, passend zu den Namen, keine fehlenden Werte."""
+    import numpy as np
+    from fengshui.surrogat import merkmal_namen, merkmale as geo_merkmale
+    from mein_zimmer import erstelle_layout
+    basis = erstelle_layout()
+    rng = random.Random(1)
+    for _ in range(5):
+        x = geo_merkmale(zufallslayout(basis, rng))
+        assert len(x) == len(merkmal_namen(basis))
+        assert np.all(np.isfinite(x))

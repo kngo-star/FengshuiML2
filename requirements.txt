@@ -1,5 +1,8 @@
 matplotlib>=3.5
 numpy>=1.21
+# Gradient Boosting (surrogat_trainieren.py):
+scikit-learn>=1.3
+joblib
 # Für Foto-Erkennung und Foto-Vermessung:
 ultralytics>=8.3
 pillow

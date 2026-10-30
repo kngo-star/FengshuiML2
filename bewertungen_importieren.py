@@ -1,11 +1,15 @@
 """
-Noten aus dem Bewertungsbogen ins Modell übernehmen und trainieren.
+Noten aus dem Bewertungsbogen übernehmen und damit die Regeln PRÜFEN.
+
+Die Noten ändern die Regeln nicht (es gelten Buch + Menschenverstand). Das Skript zeigt,
+wie gut die Regeln die Noten treffen und wo sie am weitesten danebenliegen – dort fehlt
+vielleicht eine Regel mit Menschenverstand.
 
 Beispiel (Terminal oder PyCharm-Run-Konfiguration mit Parametern):
     python bewertungen_importieren.py runde2 "1=7; 2=8; 3=5; 4=8; 5=7; 6=7; 7=7; 8=8"
 
 Die Vorschläge einer Runde liegen in daten/<runde>_vorschlaege.json (mit den Regel-Merkmalen).
-Die Noten landen in meine_bewertungen.json – das ist DEIN persönliches Modell.
+Die Noten landen in meine_bewertungen.json (deine persönlichen Bewertungen).
 Dieselbe Runde zweimal zu importieren ersetzt die alten Noten dieser Runde (keine Doppelten).
 """
 import json
@@ -13,7 +17,7 @@ import os
 import re
 import sys
 
-from fengshui.ml import Personalisierung, weiche_regel_ids
+from fengshui.ml import Personalisierung, pruefe, weiche_regel_ids
 
 
 def noten_lesen(text: str) -> dict[int, float]:
@@ -47,10 +51,8 @@ def main():
     noten = noten_lesen(text)
     pers = importieren(runde, noten)
     print(f"{len(noten)} Noten aus {runde} übernommen – insgesamt {len(pers.daten)} Bewertungen.")
-    if len(pers.daten) >= 3:
-        pers.trainiere()
-        print()
-        print(pers.vergleich())
+    print()
+    print(pruefe(pers.daten))
 
 
 if __name__ == "__main__":

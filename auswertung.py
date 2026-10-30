@@ -1,112 +1,38 @@
 """
 EVALUATION – Zahlen und Grafiken für den Projektbericht.
 
-In PyCharm: Rechtsklick auf auswertung.py -> Run 'auswertung'   (dauert ca. 2–4 Minuten)
+In PyCharm: Rechtsklick auf auswertung.py -> Run 'auswertung'   (dauert ca. 1–2 Minuten)
 
 Ergebnis im Ordner `auswertung/`:
     bericht_auswertung.md          alle Zahlen als Tabellen (zum Übernehmen in den Bericht)
     1_optimierer_vs_zufall.png     Wie gut ist die Suche (Simulated Annealing) im Vergleich zu Zufall?
     2_korrektur.png                Wie stark verbessert die Minimal-Korrektur ein Zimmer – mit wie vielen Änderungen?
-    3_lernkurve_simulation.png     Lernt das Präferenz-Modell den Geschmack einer Person? (Simulationsstudie)
-    4_echte_bewertungen.png        Wie gut sagt das Modell EURE Noten voraus? (Kreuzvalidierung, ab 8 Bewertungen)
+    3_regeln_vs_noten.png          Treffen die Regeln das Gefühl? (Noten aus dem Bewertungsbogen)
 
-Die vier Teile entsprechen den Evaluationsfragen:
-  1. Findet der Optimierer gute, machbare Anordnungen?            -> Score + Anteil machbar, Laufzeit
-  2. Schlägt die Korrektur sinnvolle Änderungen vor?               -> Score vorher/nachher, Anzahl Änderungen,
-                                                                      Mini-Verschiebungen (< 30 cm) = 0?
-  3. Funktioniert das Lernverfahren grundsätzlich?                -> „virtuelle Testperson“ mit bekanntem Geschmack:
-                                                                      findet das Modell ihn aus wenigen Noten wieder?
-  4. Bringt Personalisierung bei echten Menschen etwas?           -> Leave-one-out-Kreuzvalidierung auf euren Noten,
-                                                                      Vergleich mit dem reinen Buch-Modell
+Das Gradient-Boosting-Modell hat ein eigenes Skript: surrogat_trainieren.py (-> auswertung/surrogat_*).
 """
 from __future__ import annotations
 
-import contextlib
-import io
 import json
 import math
 import os
 import random
-import tempfile
 import time
 
 import numpy as np
 
 from fengshui.bewertung import bewerte
-from fengshui.ml import Personalisierung, merkmale, weiche_regel_ids
+from fengshui.ml import pruefe, regel_score, spearman
 from fengshui.optimierer import korrigiere, optimiere, zufallslayout
-from fengshui.regeln import REGELN
 from mein_zimmer import erstelle_layout
 
 ORDNER = "auswertung"
 SEED = 2026
-BUCH = {r.id: r.gewicht for r in REGELN}
-TITEL = {r.id: r.titel for r in REGELN}
-
-
-# ------------------------------------------------------------------ Hilfen
-def _still(f, *a, **kw):
-    """Funktion ohne Konsolenausgabe ausführen."""
-    with contextlib.redirect_stdout(io.StringIO()):
-        return f(*a, **kw)
-
-
-def _raenge(x):
-    x = np.asarray(x, float)
-    order = x.argsort()
-    r = np.empty(len(x))
-    r[order] = np.arange(len(x))
-    for v in np.unique(x):                     # gleiche Werte -> mittlerer Rang
-        idx = x == v
-        if idx.sum() > 1:
-            r[idx] = r[idx].mean()
-    return r
-
-
-def spearman(a, b) -> float:
-    """Rangkorrelation: 1 = Reihenfolge perfekt getroffen, 0 = Zufall."""
-    ra, rb = _raenge(a), _raenge(b)
-    if ra.std() == 0 or rb.std() == 0:
-        return 0.0
-    return float(np.corrcoef(ra, rb)[0, 1])
-
-
-def _matrix(daten, ids):
-    S = np.array([[d["merkmale"].get(k, 0.0) for k in ids] for d in daten])
-    y = np.array([d["note"] for d in daten])
-    return S, y
-
-
-def trainiere_personal(train, lambda_prior=2.0) -> dict:
-    """Das Lernverfahren aus ml.py – ohne die echte meine_bewertungen.json anzufassen."""
-    with tempfile.TemporaryDirectory() as tmp:
-        p = Personalisierung(os.path.join(tmp, "x.json"))
-        p.daten = list(train)
-        return _still(p.trainiere, lambda_prior=lambda_prior)
-
-
-def vorhersage(train, test, gewichte):
-    """Note ≈ b − a · Σ w_i·Strafe_i ; a, b per kleinster Quadrate auf den Trainingsdaten (a ≥ 0)."""
-    ids = sorted(gewichte)
-    w = np.array([gewichte[k] for k in ids])
-    S_tr, y_tr = _matrix(train, ids)
-    S_te, _ = _matrix(test, ids)
-    x = S_tr @ w
-    if x.std() < 1e-9:
-        a = 0.0
-    else:
-        a = max(0.0, -np.cov(x, y_tr)[0, 1] / x.var(ddof=1))
-    b = y_tr.mean() + a * x.mean()
-    return b - a * (S_te @ w)
-
-
-def buch_gewichte(ids):
-    return {k: BUCH[k] for k in ids}
 
 
 # ------------------------------------------------------------------ 1. Optimierer
 def teil1_optimierer(basis, rng):
-    print("1/4  Optimierer vs. Zufall …")
+    print("1/3  Optimierer vs. Zufall …")
     zufall = [bewerte(zufallslayout(basis, rng)) for _ in range(400)]
     t = time.time()
     opt = []
@@ -150,7 +76,7 @@ def teil1_optimierer(basis, rng):
 
 # ------------------------------------------------------------------ 2. Korrektur
 def teil2_korrektur(basis):
-    print("2/4  Minimal-Korrektur …")
+    print("2/3  Minimal-Korrektur …")
     zeilen = []
     for i in range(8):
         # „Ist-Zustand“: kurz optimiert = plausibel eingerichtet, aber mit typischen Fehlern
@@ -181,121 +107,41 @@ def teil2_korrektur(basis):
     return zeilen
 
 
-# ------------------------------------------------------------------ 3. Simulationsstudie
-def _layout_pool(basis, rng, n):
-    """Plausible, machbare Layouts unterschiedlicher Qualität (wie beim Bewerten in lernen.py)."""
-    pool = []
-    while len(pool) < n:
-        lay, e = optimiere(basis, iterationen=rng.choice([20, 40, 80, 160, 320]), neustarts=1,
-                           seed=rng.randrange(10 ** 9), anzahl_ergebnisse=1, ausgabe=False)[0]
-        if e.machbar:
-            pool.append(merkmale(lay))
-    return pool
-
-
-def _virtuelle_person(ids, rng):
-    """Geschmack mit bekannten Gewichten: manche Regeln egal (×0), manche doppelt/dreifach so wichtig."""
-    return {k: BUCH[k] * rng.choice([0.0, 0.5, 1.0, 1.0, 2.0, 3.0]) for k in ids}
-
-
-def _noten(pool, w_echt, rng, rauschen=0.8):
-    ids = sorted(w_echt)
-    S = np.array([[m.get(k, 0.0) for k in ids] for m in pool])
-    x = S @ np.array([w_echt[k] for k in ids])
-    skala = 6.0 / max(1e-6, np.percentile(x, 90))      # beste ≈ 10, schlechteste ≈ 3–4
-    y = 10 - skala * x + np.array([rng.gauss(0, rauschen) for _ in x])
-    y = np.clip(np.round(y * 2) / 2, 0, 10)          # halbe Noten wie bei Menschen
-    wahr = 10 - skala * x                              # „wahrer“ Geschmack ohne Tagesform
-    return [{"merkmale": m, "note": float(n)} for m, n in zip(pool, y)], wahr
-
-
-def teil3_simulation(basis, rng):
-    print("3/4  Simulationsstudie Präferenzlernen (virtuelle Testpersonen) …")
-    ids = weiche_regel_ids(basis.raum.raumtyp)
-    pool = _layout_pool(basis, rng, 140)
-    anzahlen = [5, 8, 12, 20, 30, 40]
-    personen = 6
-    res = {n: {"personal": [], "buch": [], "mae_personal": [], "mae_buch": []} for n in anzahlen}
-    for p in range(personen):
-        w_echt = _virtuelle_person(ids, rng)
-        daten, wahr = _noten(pool, w_echt, rng)
-        idx = list(range(len(daten)))
-        rng.shuffle(idx)
-        test_idx = idx[:60]
-        test = [daten[i] for i in test_idx]
-        for n in anzahlen:
-            train = [daten[i] for i in idx[60:60 + n]]
-            g_pers = trainiere_personal(train)
-            for name, g in (("personal", g_pers), ("buch", buch_gewichte(g_pers))):
-                pred = vorhersage(train, test, g)
-                res[n][name].append(spearman(pred, [wahr[i] for i in test_idx]))
-                res[n]["mae_" + name].append(float(np.mean(np.abs(pred - [d["note"] for d in test]))))
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(figsize=(7, 4))
-    for name, farbe, label in (("personal", "#2a7", "Personalisiert (lernt aus Noten)"),
-                               ("buch", "#888", "Nur Buch-Gewichte")):
-        m = [np.mean(res[n][name]) for n in anzahlen]
-        s = [np.std(res[n][name]) for n in anzahlen]
-        ax.errorbar(anzahlen, m, yerr=s, marker="o", color=farbe, label=label, capsize=3)
-    ax.set_xlabel("Anzahl Bewertungen")
-    ax.set_ylabel("Rangkorrelation mit dem wahren Geschmack")
-    ax.set_ylim(0, 1)
-    ax.set_title(f"Lernkurve – {personen} virtuelle Testpersonen, je 60 Test-Layouts")
-    ax.legend(loc="lower right")
-    fig.tight_layout()
-    fig.savefig(os.path.join(ORDNER, "3_lernkurve_simulation.png"), dpi=140)
-    plt.close(fig)
-    return anzahlen, res, personen
-
-
-# ------------------------------------------------------------------ 4. Echte Bewertungen
-def teil4_echt(datei="meine_bewertungen.json"):
-    print("4/4  Eure echten Bewertungen …")
+# ------------------------------------------------------------------ 3. Regeln vs. Menschen
+def teil3_menschen(datei="meine_bewertungen.json"):
+    """Treffen die Regeln (Buch + Menschenverstand) das Gefühl? Die Noten PRÜFEN nur, sie ändern nichts."""
+    print("3/3  Regeln vs. eure Noten …")
     if not os.path.exists(datei):
         return None
     with open(datei, encoding="utf-8") as f:
         daten = json.load(f).get("daten", [])
-    if len(daten) < 8:
+    if len(daten) < 3:
         return {"n": len(daten)}
-    ids = sorted({k for d in daten for k in d["merkmale"]})
-    pred_p, pred_b, echt = [], [], []
-    for i in range(len(daten)):                       # Leave-one-out: jede Note einmal vorhersagen
-        train = daten[:i] + daten[i + 1:]
-        g = trainiere_personal(train)
-        pred_p.append(vorhersage(train, [daten[i]], g)[0])
-        pred_b.append(vorhersage(train, [daten[i]], buch_gewichte(ids))[0])
-        echt.append(daten[i]["note"])
-    echt = np.array(echt)
-    mittelwert = [np.mean([d["note"] for j, d in enumerate(daten) if j != i]) for i in range(len(daten))]
-    erg = {
-        "n": len(daten),
-        "mae_personal": float(np.mean(np.abs(np.array(pred_p) - echt))),
-        "mae_buch": float(np.mean(np.abs(np.array(pred_b) - echt))),
-        "mae_mittelwert": float(np.mean(np.abs(np.array(mittelwert) - echt))),
-        "rho_personal": spearman(pred_p, echt),
-        "rho_buch": spearman(pred_b, echt),
-    }
-    g = trainiere_personal(daten)
-    unterschiede = sorted(((g[k] - BUCH[k], k) for k in g), key=lambda x: -abs(x[0]))[:8]
-    erg["groesste_abweichungen"] = [(k, TITEL[k], BUCH[k], g[k]) for _, k in unterschiede]
+    scores = [regel_score(d["merkmale"]) for d in daten]
+    noten = [d["note"] for d in daten]
+    erg = {"n": len(daten), "rho": spearman(scores, noten), "text": pruefe(daten, top=3)}
+    runden = sorted({d.get("runde", "?") for d in daten})
+    erg["runden"] = []
+    for r in runden:
+        idx = [i for i, d in enumerate(daten) if d.get("runde", "?") == r]
+        erg["runden"].append((r, len(idx), spearman([scores[i] for i in idx], [noten[i] for i in idx])))
     import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.scatter(echt, pred_b, color="#888", label=f"Nur Buch (Fehler Ø {erg['mae_buch']:.2f})")
-    ax.scatter(echt, pred_p, color="#2a7", label=f"Personalisiert (Fehler Ø {erg['mae_personal']:.2f})")
-    ax.plot([0, 10], [0, 10], "k--", lw=1)
-    ax.set_xlabel("Eure Note")
-    ax.set_ylabel("Vorhergesagte Note (ohne diese Note trainiert)")
-    ax.set_xlim(0, 10); ax.set_ylim(0, 10)
-    ax.set_title(f"Leave-one-out mit {len(daten)} Bewertungen")
-    ax.legend(loc="upper left", fontsize=8)
+    fig, ax = plt.subplots(figsize=(5.5, 4.5))
+    ax.scatter(scores, noten, color="#2a7")
+    for d, x, y in zip(daten, scores, noten):
+        ax.annotate(str(d.get("vorschlag", "")), (x, y), textcoords="offset points", xytext=(4, 3), fontsize=8)
+    ax.set_xlabel("Regel-Score (Buch + Menschenverstand)")
+    ax.set_ylabel("Deine Note")
+    ax.set_ylim(0, 10.5)
+    ax.set_title(f"Regeln vs. Gefühl – Rangkorrelation {erg['rho']:+.2f}")
     fig.tight_layout()
-    fig.savefig(os.path.join(ORDNER, "4_echte_bewertungen.png"), dpi=140)
+    fig.savefig(os.path.join(ORDNER, "3_regeln_vs_noten.png"), dpi=140)
     plt.close(fig)
     return erg
 
 
 # ------------------------------------------------------------------ Bericht
-def bericht(t1, t2, t3, t4) -> str:
+def bericht(t1, t2, t3) -> str:
     z = ["# Auswertung FengshuiML", "",
          f"Erzeugt mit `auswertung.py` am {time.strftime('%d.%m.%Y %H:%M')} (Zufalls-Seed {SEED}).", ""]
     z += ["## 1. Optimierer (Simulated Annealing) vs. Zufall", "",
@@ -328,41 +174,29 @@ def bericht(t1, t2, t3, t4) -> str:
             z.append(f"- Zimmer {k}: {t}")
         if not r["texte"]:
             z.append(f"- Zimmer {k}: keine Änderung (Umstellen lohnt sich nicht)")
-    anzahlen, res, personen = t3
-    z += ["", "## 3. Simulationsstudie: Lernt das Modell einen Geschmack?", "",
-          f"{personen} virtuelle Testpersonen mit bekanntem Geschmack (zufällig: manche Regeln egal, manche bis 3× "
-          "so wichtig wie im Buch) bewerten Layouts – mit Rauschen (±0.8 Noten) und halben Noten wie echte Menschen. "
-          "Gemessen wird, wie gut das Modell die Reihenfolge von 60 *nicht* bewerteten Layouts trifft "
-          "(Rangkorrelation nach Spearman, 1 = perfekt).", "",
-          "| Bewertungen | Personalisiert ρ | Nur Buch ρ | Personalisiert Fehler Ø | Nur Buch Fehler Ø |",
-          "|---|---|---|---|---|"]
-    for n in anzahlen:
-        r = res[n]
-        z.append(f"| {n} | {np.mean(r['personal']):.2f} ± {np.std(r['personal']):.2f} | "
-                 f"{np.mean(r['buch']):.2f} ± {np.std(r['buch']):.2f} | "
-                 f"{np.mean(r['mae_personal']):.2f} | {np.mean(r['mae_buch']):.2f} |")
-    z += ["", "Grafik: `3_lernkurve_simulation.png`", ""]
-    z += ["## 4. Eure echten Bewertungen (Leave-one-out-Kreuzvalidierung)", ""]
-    if t4 is None:
-        z.append("Noch keine `meine_bewertungen.json` – erst mit `lernen.py` bewerten, dann erneut ausführen.")
-    elif "mae_personal" not in t4:
-        z.append(f"Erst {t4['n']} Bewertungen – für eine aussagekräftige Kreuzvalidierung braucht es mindestens 8.")
+    z += ["", "## 3. Treffen die Regeln das Gefühl? (Noten aus dem Bewertungsbogen)", "",
+          "Die Regeln stammen aus dem Buch, ergänzt um Menschenverstand-Regeln für Lücken im Buch. Die Noten ändern "
+          "die Regeln nicht – sie prüfen, ob die Reihenfolge nach Regel-Score zur Reihenfolge nach Gefühl passt "
+          "(Rangkorrelation nach Spearman: 1 = gleiche Reihenfolge, 0 = kein Zusammenhang).", ""]
+    if t3 is None:
+        z.append("Noch keine `meine_bewertungen.json` – erst bewerten (Bewertungsbogen oder `lernen.py`).")
+    elif "rho" not in t3:
+        z.append(f"Erst {t3['n']} Noten – für eine Aussage braucht es mindestens 3.")
     else:
-        z += [f"Jede der {t4['n']} Noten wird vorhergesagt, ohne dass das Modell sie beim Training gesehen hat.", "",
-              "| Modell | Fehler Ø (Notenpunkte) | Rangkorrelation ρ |", "|---|---|---|",
-              f"| Immer den Mittelwert raten | {t4['mae_mittelwert']:.2f} | – |",
-              f"| Nur Buch-Gewichte | {t4['mae_buch']:.2f} | {t4['rho_buch']:.2f} |",
-              f"| Personalisiert | {t4['mae_personal']:.2f} | {t4['rho_personal']:.2f} |", "",
-              "Größte Unterschiede zwischen Buch und eurem Geschmack:", "",
-              "| Regel | Buch | Gelernt |", "|---|---|---|"]
-        z += [f"| {k} {t} | {b:.1f} | {g:.1f} |" for k, t, b, g in t4["groesste_abweichungen"]]
-        z += ["", "Grafik: `4_echte_bewertungen.png`"]
+        z += ["| Runde | Noten | Rangkorrelation ρ |", "|---|---|---|"]
+        z += [f"| {r} | {n} | {rho:+.2f} |" for r, n, rho in t3["runden"]]
+        z += ["", "```", t3["text"], "```", "", "Grafik: `3_regeln_vs_noten.png`"]
+    z += ["", "## 4. Gradient Boosting (Ersatzmodell)", "",
+          "Siehe `auswertung/surrogat_bericht.md` (erzeugt mit `surrogat_trainieren.py`): Gradient Boosting lernt, "
+          "den Regel-Score vorherzusagen – trainiert auf tausenden automatisch bewerteten Grundrissen, geprüft mit "
+          "10-facher Kreuzvalidierung.", ""]
     z += ["", "## Grenzen", "",
           "- Der Score misst die Einhaltung der Buchregeln, nicht eine nachgewiesene Wirkung (Feng Shui ist "
           "wissenschaftlich nicht belegt).",
           "- Getestet an einem Zimmer (Maße aus `mein_zimmer.py`); andere Grundrisse können anders abschneiden.",
-          "- Die Simulationsstudie zeigt, dass das Verfahren funktioniert, *wenn* sich Geschmack als gewichtete "
-          "Regel-Summe beschreiben lässt – ob das für echte Menschen gilt, zeigt erst Teil 4.", ""]
+          "- Wenige Noten von wenigen Personen: Teil 3 ist ein Hinweis, kein Beweis. Die Noten widersprachen sich "
+          "zwischen Personen und teils bei einer Person (Noten vs. Kommentare) – deshalb lernt das System sie nicht, "
+          "sondern nutzt sie zum Prüfen und um Lücken im Buch zu finden.", ""]
     return "\n".join(z)
 
 
@@ -376,9 +210,8 @@ def main():
     start = time.time()
     t1 = teil1_optimierer(basis, rng)
     t2 = teil2_korrektur(basis)
-    t3 = teil3_simulation(basis, rng)
-    t4 = teil4_echt()
-    text = bericht(t1, t2, t3, t4)
+    t3 = teil3_menschen()
+    text = bericht(t1, t2, t3)
     with open(os.path.join(ORDNER, "bericht_auswertung.md"), "w", encoding="utf-8") as f:
         f.write(text)
     print()

@@ -1,14 +1,16 @@
 """
-Machine-Learning-Schritt: Bewerte vorgeschlagene Layouts mit 0–10.
-Das Modell lernt daraus, welche Regeln DIR wichtig sind, und speichert
-die Gewichte in meine_bewertungen.json. main.py benutzt sie danach automatisch.
+Bewerten in PyCharm: Vorschläge mit 0–10 benoten (wie der Bewertungsbogen, aber in der Konsole).
+
+Die Noten werden in meine_bewertungen.json gespeichert und zum PRÜFEN der Regeln benutzt:
+Wie gut trifft die Regelbasis (Buch + Menschenverstand) dein Gefühl, und wo liegt sie daneben?
+Die Regeln selbst ändern sich dadurch nicht.
 
 In PyCharm: Run 'lernen' – die Bilder öffnen sich, die Note gibst du in der Konsole ein.
 """
 import random
 
 from fengshui.bewertung import bericht, bewerte
-from fengshui.ml import Personalisierung
+from fengshui.ml import Personalisierung, pruefe
 from fengshui.optimierer import deutlich_verschieden, optimiere
 from fengshui.regeln import REGELN
 from fengshui.visualisierung import zeichne
@@ -27,8 +29,8 @@ def vorschlaege(layout, n, gewichte, rng):
     """n wirklich verschiedene, umsetzbare und logische Vorschläge zum Bewerten.
 
     Alle Vorschläge erfüllen sämtliche harten Regeln (nichts verdeckt, Schränke an der Wand, Tisch benutzbar …).
-    Hälfte: die besten nach dem aktuellen Modell. Andere Hälfte: die besten für einen zufällig veränderten
-    Geschmack – plausibel, aber mit anderen Schwerpunkten. So lernt das Modell, welche Regeln DIR wichtig sind.
+    Hälfte: die besten nach den Buch-Gewichten. Andere Hälfte: die besten für zufällig veränderte Gewichte –
+    plausibel, aber mit anderen Schwerpunkten. So sieht man, ob die Reihenfolge des Buchs zum Gefühl passt.
     Zwei Vorschläge gelten nur als verschieden, wenn mindestens ein großes Möbel ≥ 1 m woanders steht oder
     anders gedreht ist.
     """
@@ -77,13 +79,10 @@ def main():
         if eingabe == "q":
             break
 
-    if len(pers.daten) >= 3:
-        pers.trainiere()
-        print()
-        print(pers.vergleich())
-        print("\nGespeichert. Starte jetzt main.py – der Optimierer nutzt deine Gewichte.")
-    else:
-        print("Für das Training sind mindestens 3 Bewertungen nötig.")
+    print()
+    print(pruefe(pers.daten))
+    print("\nGespeichert in meine_bewertungen.json. Die Regeln bleiben, wie sie sind (Buch + Menschenverstand);")
+    print("schau dir die größten Abweichungen an – fehlt dort eine Regel?")
 
 
 if __name__ == "__main__":

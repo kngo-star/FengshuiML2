@@ -45,6 +45,7 @@ class Regel:
     gewicht: float
     pruefe: Callable[[Layout], list[Befund]]
     raumtypen: Optional[set[str]] = None   # None = gilt für alle Räume
+    herkunft: str = "buch"                 # "buch" = aus dem Feng-Shui-Buch, "verstand" = Menschenverstand (Lücke im Buch)
 
     def gilt_fuer(self, raumtyp: str) -> bool:
         return self.raumtypen is None or raumtyp in self.raumtypen
@@ -53,10 +54,10 @@ class Regel:
 REGELN: list[Regel] = []
 
 
-def regel(id, titel, beschreibung, quelle, kategorie, gewicht, raumtypen=None):
+def regel(id, titel, beschreibung, quelle, kategorie, gewicht, raumtypen=None, herkunft="buch"):
     def deko(fn):
         REGELN.append(Regel(id, titel, beschreibung, quelle, kategorie, gewicht, fn,
-                            set(raumtypen) if raumtypen else None))
+                            set(raumtypen) if raumtypen else None, herkunft))
         return fn
     return deko
 
@@ -261,9 +262,10 @@ def _h07(layout):
     return bef
 
 
-# ------------------------------------------------------------ Praktische Regeln aus Nutzer-Feedback
-# Nicht aus dem Buch: Diese Regeln fehlten und sind beim ersten Bewertungsbogen (Runde 1) aufgefallen –
-# Vorschläge waren laut Regelbasis „machbar“, im Alltag aber unlogisch.
+# ------------------------------------------------------------ Menschenverstand: Lücken im Buch
+# Grundsatz: Es gelten die Regeln aus dem Buch. Regeln mit Menschenverstand (herkunft="verstand") gibt es nur dort,
+# wo das Buch NICHTS sagt – nie gegen das Buch. Diese vier fehlten und sind beim ersten Bewertungsbogen (Runde 1)
+# aufgefallen: Vorschläge waren laut Regelbasis „machbar“, im Alltag aber unlogisch.
 STEHT_AN_WAND = {"schrank", "kommode", "regal", "sideboard", "konsole"}
 
 
@@ -274,8 +276,8 @@ def _vor_kante(m: Moebel, tiefe: float) -> g.Rect:
 
 @regel("H08", "Schränke stehen an der Wand",
        "Schränke, Kommoden und Regale stehen mit der Rückseite an einer Wand – frei im Raum wirken sie wie ein "
-       "Hindernis und kippen leichter. (Praktische Regel, aus Nutzer-Feedback ergänzt.)",
-       "praktisch (Nutzer-Feedback Runde 1)", "hart", 6.0)
+       "Hindernis und kippen leichter. (Menschenverstand – Lücke im Buch, aus Nutzer-Feedback ergänzt.)",
+       "Menschenverstand (Nutzer-Feedback Runde 1)", "hart", 6.0, herkunft="verstand")
 def _h08(layout):
     bef = []
     for m in _boden(layout):
@@ -288,8 +290,8 @@ def _h08(layout):
 
 @regel("H09", "Spiegel und Bilder nicht verdecken",
        "Vor Spiegeln, Bildern und Wandregalen steht kein hohes Möbel – sonst sind sie nutzlos. "
-       "(Praktische Regel, aus Nutzer-Feedback ergänzt.)",
-       "praktisch (Nutzer-Feedback Runde 1)", "hart", 6.0)
+       "(Menschenverstand – Lücke im Buch, aus Nutzer-Feedback ergänzt.)",
+       "Menschenverstand (Nutzer-Feedback Runde 1)", "hart", 6.0, herkunft="verstand")
 def _h09(layout):
     bef = []
     for w in layout.moebel:
@@ -304,8 +306,8 @@ def _h09(layout):
 
 @regel("H10", "Kein hohes Möbel vor dem Fenster",
        "Schränke und andere hohe Möbel (ab 1,5 m) gehören nicht vor ein Fenster – es wird dunkel und das Fenster "
-       "lässt sich nicht mehr öffnen. (Verschärft S03, aus Nutzer-Feedback ergänzt.)",
-       "praktisch (Nutzer-Feedback Runde 1), Kap. 4/5", "hart", 6.0)
+       "lässt sich nicht mehr öffnen. (Menschenverstand – das Buch sagt nur „Ausblick nicht verstellen“ (S03), aus Nutzer-Feedback ergänzt.)",
+       "Menschenverstand (Nutzer-Feedback Runde 1), ergänzt Kap. 4/5", "hart", 6.0, herkunft="verstand")
 def _h10(layout):
     bef = []
     raum = layout.raum
@@ -324,8 +326,8 @@ def _h10(layout):
 
 @regel("H11", "Arbeitsplatz frei benutzbar",
        "Direkt vor der Tischkante (wo du hinschaust und die Hände hast) steht nichts Hohes wie Schrank oder Pflanze. "
-       "(Praktische Regel, aus Nutzer-Feedback ergänzt.)",
-       "praktisch (Nutzer-Feedback Runde 1)", "hart", 6.0)
+       "(Menschenverstand – Lücke im Buch, aus Nutzer-Feedback ergänzt.)",
+       "Menschenverstand (Nutzer-Feedback Runde 1)", "hart", 6.0, herkunft="verstand")
 def _h11(layout):
     bef = []
     for d in layout.finde("schreibtisch"):
@@ -335,22 +337,6 @@ def _h11(layout):
                 continue
             if m.hoehe >= 0.9 and g.ueberlappung(zone, m.rechteck) > 0.01:
                 bef.append(Befund(1.0, f"{m.name} steht direkt vor dem {d.name}", d.name))
-    return bef
-
-
-@regel("P01", "Schreibtisch an einer Wand",
-       "Viele finden einen Schreibtisch, der frei im Raum steht, unpraktisch (Kabel, Ablage, wirkt verloren). "
-       "Nicht aus dem Buch – das Buch empfiehlt sogar oft die Kommandoposition mit Blick in den Raum. "
-       "Wie wichtig dir das ist, lernt das Modell aus deinen Noten.",
-       "praktisch (Nutzer-Feedback Runde 1)", "stil", 0.5,
-       raumtypen={"buero", "schlafzimmer", "studio", "kinderzimmer", "wohnzimmer"})
-def _p01(layout):
-    bef = []
-    for d in layout.finde("schreibtisch"):
-        richtungen = [d.vorne, (d.vorne[1], -d.vorne[0]), (-d.vorne[1], d.vorne[0])]   # vorne + beide Seiten
-        abst = min(g.abstand_zur_wand(d, layout.raum, r) for r in richtungen)
-        if abst > 0.1:
-            bef.append(Befund(min(1.0, abst / 0.6), f"{d.name} steht frei im Raum ({abst:.2f} m bis zur nächsten Wand)", d.name))
     return bef
 
 

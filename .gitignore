@@ -19,6 +19,8 @@ mein_zimmer.jpg
 !ausgabe/alle_varianten.png
 !auswertung/*.png
 meine_bewertungen.json
+# Trainiertes Gradient-Boosting-Modell (wird mit surrogat_trainieren.py erzeugt)
+daten/*.joblib
 ausgabe/erkennungen.json
 
 # Foto-Eingang/-Ausgang (start.py) – private Fotos
