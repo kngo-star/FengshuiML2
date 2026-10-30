@@ -18,6 +18,33 @@ FARBEN = {
 }
 
 
+def _kissen(ax, m):
+    """Kopfkissen am Kopfteil – zeigt eindeutig, wo der Kopf liegt."""
+    from matplotlib.patches import FancyBboxPatch
+    hx, hy = m.hinten
+    lang, tief = m.breite - 0.25, 0.32           # quer zum Bett, in Bettrichtung
+    cx, cy = m.x + hx * (m.tiefe / 2 - 0.26), m.y + hy * (m.tiefe / 2 - 0.26)
+    w, h = (lang, tief) if hy else (tief, lang)
+    ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h, boxstyle="round,pad=0,rounding_size=0.08",
+                                fc="#fffaf2", ec="#8a7457", lw=1))
+
+
+def _stuhl(ax, m):
+    """Stuhl hinter dem Schreibtisch (Sitzfläche + Lehne) – zeigt eindeutig, auf welcher Seite man sitzt."""
+    from matplotlib.patches import FancyBboxPatch
+    px, py = g.personenpunkt(m)
+    hx, hy = m.hinten
+    a = 0.4
+    ax.add_patch(FancyBboxPatch((px - a / 2, py - a / 2), a, a, boxstyle="round,pad=0,rounding_size=0.06",
+                                fc="#e9f5f2", ec="#2a9d8f", lw=1.3))
+    # Lehne auf der Seite, die vom Tisch weg zeigt
+    lx, ly = px + hx * (a / 2), py + hy * (a / 2)
+    if hy:
+        ax.plot([px - a / 2, px + a / 2], [ly, ly], color="#2a9d8f", lw=4, solid_capstyle="round")
+    else:
+        ax.plot([lx, lx], [py - a / 2, py + a / 2], color="#2a9d8f", lw=4, solid_capstyle="round")
+
+
 def zeichne(layout: Layout, titel: str = "", datei: Optional[str] = None, zeigen: bool = True,
             ax=None, chi: bool = True):
     import matplotlib.pyplot as plt
@@ -87,7 +114,11 @@ def zeichne(layout: Layout, titel: str = "", datei: Optional[str] = None, zeigen
         groesse = 7 if min(x2 - x1, y2 - y1) > 0.4 else 5.5
         ax.text(m.x, m.y - 0.12 if not m.ist_wandobjekt else m.y, m.name, ha="center", va="center",
                 fontsize=groesse, color="#111")
-        if m.typ in ("bett", "schreibtisch", "sofa"):
+        if m.typ == "bett":
+            _kissen(ax, m)
+        elif m.typ == "schreibtisch":
+            _stuhl(ax, m)
+        elif m.typ == "sofa":
             px, py = g.personenpunkt(m)
             ax.plot(px, py, "o", ms=5, color="#2a9d8f")
 
