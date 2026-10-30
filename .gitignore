@@ -17,6 +17,7 @@ mein_zimmer.jpg
 *.jpeg
 *.png
 !ausgabe/alle_varianten.png
+!auswertung/*.png
 meine_bewertungen.json
 ausgabe/erkennungen.json
 

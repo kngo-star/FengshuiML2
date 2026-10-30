@@ -192,3 +192,19 @@ was schon gut ist, was sich nicht prüfen ließ und die passenden Tipps für den
 `python regeln_exportieren.py` erzeugt **`regelbasis.md`** (lesbarer Katalog) und **`regelbasis.json`**
 (maschinenlesbar – z. B. für ein Sprachmodell oder eigene ML-Experimente).
 Neue Regel ergänzen: einen `R(...)`-Eintrag in `buchregeln.py` hinzufügen – fertig.
+
+## ✅ Tests & Evaluation (Version 5)
+
+| Datei | Run in PyCharm | Wofür |
+|---|---|---|
+| `tests_ausfuehren.py` | Run | **24 Tests**: Für die wichtigsten Regeln je ein Testzimmer, das laut Buch klar falsch ist, und eines, das klar richtig ist (Bett frei im Raum, Füße zur Tür, Rücken zur Tür, Fenster im Rücken, Spiegel aufs Bett …). Dazu: alle Regeln stürzen nie ab und liefern Strafen 0…1, alle Verweise der Buch-Regelbasis zeigen auf echte Prüfungen, der Optimierer schlägt den Zufall, die Korrektur macht keine Mini-Verschiebungen. |
+| `auswertung.py` | Run (2–4 min) | Zahlen und Grafiken für den Bericht im Ordner `auswertung/`: Optimierer vs. Zufall, Minimal-Korrektur vorher/nachher, Simulationsstudie zum Präferenzlernen (virtuelle Testpersonen), Kreuzvalidierung eurer echten Bewertungen. |
+
+**Keine „Gimmick“-Änderungen mehr:** Die Foto-Korrektur (`korrigiere()` in `optimierer.py`) verlangt jetzt
+einen Grundpreis pro angefasstem Möbel, nimmt Verschiebungen unter 30 cm zurück (außer sie sind für eine harte Regel
+nötig) und behält nur Änderungen, die für sich mindestens 3 Punkte bringen. Jede Änderung nennt die Regel, die sie löst.
+Zusätzlich werden komplett neue gute Anordnungen geprüft und davon nur so viel übernommen, wie sich lohnt.
+Behoben: Ein Fehler ließ die Korrektur manchmal eine höhere Punktzahl melden, obwohl nichts umgestellt wurde.
+
+**Bewerten (`lernen.py`):** Es kommen nur noch Vorschläge, bei denen mindestens ein großes Möbel ≥ 1 m woanders
+steht oder anders gedreht ist – halb gründlich optimiert, halb nur kurz (plausibel, aber mit Schwächen).

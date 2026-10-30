@@ -21,7 +21,7 @@ FOTO = "mein_zimmer.jpg"
 RAUMTYP = "auto"            # "auto" = selbst erkennen, sonst z. B. "schlafzimmer"
 PAAR = False                # zwei Personen im Bett?
 SUCHT_PARTNER = False
-UMSTELL_AUFWAND = 4.0       # höher = es wird weniger verschoben (Punkte pro Meter Verschieben)
+UMSTELL_AUFWAND = 1.0       # höher = es wird weniger verschoben (Punkte pro Meter; dazu 2 Punkte pro angefasstem Möbel)
 
 
 def main():

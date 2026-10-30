@@ -7,9 +7,9 @@ In PyCharm: Run 'lernen' – die Bilder öffnen sich, die Note gibst du in der K
 """
 import random
 
-from fengshui.bewertung import bericht, bewerte
+from fengshui.bewertung import bericht
 from fengshui.ml import Personalisierung
-from fengshui.optimierer import optimiere, zufallslayout, _nachbar
+from fengshui.optimierer import deutlich_verschieden, optimiere
 from fengshui.visualisierung import zeichne
 from mein_zimmer import erstelle_layout
 
@@ -17,19 +17,30 @@ ANZAHL_VORSCHLAEGE = 8
 
 
 def vorschlaege(layout, n, gewichte, rng):
-    """Mischung aus guten Layouts und leicht 'verdorbenen' Varianten – so lernt das Modell Kontraste."""
-    gute = optimiere(layout, iterationen=1200, neustarts=max(2, n // 2), gewichte=gewichte,
-                     anzahl_ergebnisse=n // 2, ausgabe=False)
-    liste = [lay for lay, _ in gute]
+    """n wirklich verschiedene, umsetzbare Vorschläge zum Bewerten.
+
+    Hälfte „gut“ (gründlich optimiert), Hälfte „mittel“ (kurz optimiert, also plausibel, aber mit Schwächen) –
+    so lernt das Modell Kontraste. Zwei Vorschläge gelten nur als verschieden, wenn mindestens ein großes
+    Möbel ≥ 1 m woanders steht oder anders gedreht ist (keine Mini-Verschiebungen als „neuer“ Vorschlag).
+    """
+    liste = []
+
+    def aufnehmen(lay, erg):
+        if erg.machbar and all(deutlich_verschieden(lay, x, min_weg=1.0) for x in liste):
+            liste.append(lay)
+
+    gute = optimiere(layout, iterationen=1200, neustarts=n, gewichte=gewichte, anzahl_ergebnisse=n,
+                     seed=rng.randrange(10 ** 9), ausgabe=False)
+    for lay, erg in gute:
+        if len(liste) >= (n + 1) // 2:
+            break
+        aufnehmen(lay, erg)
     versuche = 0
-    while len(liste) < n and versuche < 500:
+    while len(liste) < n and versuche < 60:
         versuche += 1
-        basis = rng.choice(liste) if liste else zufallslayout(layout, rng)
-        v = basis
-        for _ in range(rng.randint(2, 6)):
-            v = _nachbar(v, rng, 0.8)
-        if bewerte(v).machbar:          # nur umsetzbare Varianten zum Bewerten zeigen
-            liste.append(v)
+        lay, erg = optimiere(layout, iterationen=rng.choice([40, 80, 150, 300]), neustarts=1, gewichte=gewichte,
+                             anzahl_ergebnisse=1, seed=rng.randrange(10 ** 9), ausgabe=False)[0]
+        aufnehmen(lay, erg)
     rng.shuffle(liste)
     return liste
 

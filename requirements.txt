@@ -6,3 +6,5 @@ pillow
 transformers>=4.45
 torch
 pillow-heif   # iPhone-Fotos (HEIC)
+# Optional: Tests auch mit `python -m pytest tests` (sonst einfach tests_ausfuehren.py starten)
+# pytest

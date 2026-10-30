@@ -332,7 +332,7 @@ def vorher_nachher(rgb: np.ndarray, erkl: np.ndarray, korrigiert: np.ndarray, le
 def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "ausgabe",
                      bewohner=None, gewichte: Optional[dict] = None, kamera_in_ecke: bool = True,
                      foto_von_tuer: bool = False, bekannte_breite: Optional[float] = None,
-                     preis_pro_meter: float = 4.0, zeigen: bool = True, profil: Optional[dict] = None):
+                     preis_pro_meter: float = 1.0, zeigen: bool = True, profil: Optional[dict] = None):
     """Foto rein → analysiertes, korrigiertes Foto raus.
 
     profil: optionale Angaben (Farben, Licht, Bett …) – ergänzen, was das Foto nicht zeigt.

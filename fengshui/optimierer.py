@@ -219,6 +219,17 @@ def optimiere(layout: Layout, iterationen: int = 3000, neustarts: int = 6,
     return vielfalt
 
 
+def deutlich_verschieden(a: Layout, b: Layout, min_weg: float = 0.6, min_flaeche: float = 0.4) -> bool:
+    """True, wenn mindestens ein großes Möbel (Bett, Schreibtisch, Schrank …) woanders steht
+    (≥ `min_weg` verschoben) oder anders gedreht ist. Kleine Verschiebungen zählen nicht."""
+    for m, n in zip(a.moebel, b.moebel):
+        if m.gehoert_zu or m.ist_wandobjekt or m.breite * m.tiefe < min_flaeche:
+            continue
+        if math.hypot(m.x - n.x, m.y - n.y) >= min_weg or m.rot % 360 != n.rot % 360:
+            return True
+    return False
+
+
 def _unterschied(a: Layout, b: Layout) -> float:
     return sum(math.hypot(m.x - n.x, m.y - n.y) + (0.5 if m.rot != n.rot else 0)
                for m, n in zip(a.moebel, b.moebel))
@@ -256,27 +267,82 @@ class Aenderung:
 _RICHTUNG = {0: "oben", 90: "rechts", 180: "unten", 270: "links"}
 
 
-def _bewegungskosten(neu: Layout, ist: dict, preis_m: float, preis_drehung: float) -> float:
+def _bewegungskosten(neu: Layout, ist: dict, preis_m: float, preis_drehung: float,
+                     grundpreis: float = 0.0) -> float:
+    """Aufwand fürs Umstellen: Grundpreis pro angefasstem Möbel + Preis pro Meter + Preis pro Drehung.
+
+    Der Grundpreis sorgt dafür, dass sich kein Möbel für einen Mini-Gewinn bewegt – erst „anpacken“
+    kostet etwas, dann zählt jeder Meter.
+    """
     k = 0.0
     for m in neu.moebel:
         a = ist.get(m.name)
         if a is None:
             continue
-        k += preis_m * math.dist((m.x, m.y), (a[0], a[1]))
-        if m.rot % 360 != a[2] % 360 and not m.gehoert_zu:
+        if m.gehoert_zu:       # Nachttisch & Co. wandern mit dem Elternmöbel mit – kein eigener Aufwand
+            continue
+        weg = math.dist((m.x, m.y), (a[0], a[1]))
+        gedreht = m.rot % 360 != a[2] % 360
+        k += preis_m * weg
+        if gedreht:
             k += preis_drehung
+        if weg > 0.01 or gedreht:
+            k += grundpreis
     return k
 
 
+def _zuruecksetzen(lay: Layout, name: str, pos: tuple) -> Layout:
+    test = lay.kopie()
+    t = test.nach_name(name)
+    t.x, t.y, t.rot = pos
+    kinder_platzieren(test)
+    return test
+
+
+def _gruende(mit: Ergebnis, ohne: Ergebnis, name: str = "", vorher: Optional[Ergebnis] = None) -> list[str]:
+    """Welche Regeln werden durch diese Änderung gelöst oder besser?
+
+    1) Vergleich mit/ohne genau diese Änderung (nur weiche Regeln – „Keine Überlappung“ wäre bei einer
+       Umstellung mehrerer Möbel nur ein Folgeeffekt).
+    2) Sonst: Probleme, die dieses Möbel vorher hatte und die jetzt gelöst/besser sind.
+    """
+    regeln = {r.id: r for r in mit.regeln}
+
+    def text(rid, s_neu):
+        return f"{regeln[rid].titel} ({'gelöst' if s_neu < 0.01 else 'besser'})"
+
+    besser = []
+    if ohne.machbar or not mit.machbar:
+        for rid, s_mit in mit.strafen.items():
+            d = ohne.strafen.get(rid, 0.0) - s_mit
+            if d > 0.05 and rid in regeln and regeln[rid].kategorie != "hart":
+                besser.append((regeln[rid].gewicht * d, text(rid, s_mit)))
+    if not besser and vorher is not None:
+        for rid, bs in vorher.befunde.items():
+            if rid in regeln and any(b.moebel == name for b in bs):
+                d = vorher.strafen[rid] - mit.strafen.get(rid, 0.0)
+                if d > 0.05:
+                    besser.append((regeln[rid].gewicht * d, text(rid, mit.strafen.get(rid, 0.0))))
+    besser.sort(key=lambda x: -x[0])
+    return [t for _, t in besser] or ["macht Platz für die anderen Änderungen"]
+
+
 def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterationen: int = 2500,
-               neustarts: int = 3, preis_pro_meter: float = 4.0, preis_drehung: float = 3.0,
-               seed: Optional[int] = None, ausgabe: bool = True, zusatzkosten=None):
+               neustarts: int = 3, preis_pro_meter: float = 1.0, preis_drehung: float = 1.0,
+               seed: Optional[int] = None, ausgabe: bool = True, zusatzkosten=None,
+               grundpreis: float = 2.0, min_weg: float = 0.30, min_gewinn: float = 3.0):
     """Verbessert die JETZIGE Einrichtung mit möglichst wenig Umstellen.
 
     zusatzkosten: optionale Funktion Layout -> Kosten (z. B. "nicht in unbekannte Bereiche stellen").
 
-    Jeder Meter Verschieben kostet `preis_pro_meter` Punkte, jede Drehung `preis_drehung` –
-    ein Möbel wird also nur bewegt, wenn es dadurch deutlich besser wird.
+    Jedes angefasste Möbel kostet `grundpreis`, jeder Meter `preis_pro_meter`, jede Drehung
+    `preis_drehung` – ein Möbel wird also nur bewegt, wenn es dadurch deutlich besser wird.
+
+    Danach werden alle Änderungen einzeln geprüft (keine „Gimmick“-Vorschläge):
+      * Verschiebungen unter `min_weg` (ohne Drehung) werden zurückgenommen –
+        außer sie sind nötig, damit eine harte Regel (z. B. Laufweg frei) erfüllt bleibt.
+      * Jede Änderung muss für sich mindestens `min_gewinn` Punkte bringen, sonst bleibt das Möbel stehen.
+      * Jede übrige Änderung bekommt als Grund die Regeln, die sie löst oder verbessert.
     Rückgabe: (neues Layout, Ergebnis, Liste der Änderungen, Ergebnis vorher)
     """
     rng = random.Random(seed)
@@ -284,7 +350,7 @@ def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterati
     e_ist = bewerte(ist, gewichte)
 
     def kosten(lay, erg):
-        k = erg.kosten + _bewegungskosten(lay, ist_pos, preis_pro_meter, preis_drehung)
+        k = erg.kosten + _bewegungskosten(lay, ist_pos, preis_pro_meter, preis_drehung, grundpreis)
         return k + (zusatzkosten(lay) if zusatzkosten else 0.0)
 
     bestes_g, k_best_g, e_best_g = ist.kopie(), kosten(ist, e_ist), e_ist
@@ -317,11 +383,12 @@ def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterati
         if not verbessert:
             break
     start = bestes_g.kopie()
+    e_start = bewerte(start, gewichte)
 
     # 2) Simulated Annealing zum Feinschliff
     t_start, t_ende = 3.0, 0.02
     for lauf in range(neustarts):
-        aktuell, e_akt = start.kopie(), e_best_g
+        aktuell, e_akt = start.kopie(), e_start
         k_akt = kosten(aktuell, e_akt)
         bestes, k_best, e_best = aktuell, k_akt, e_akt
         for i in range(iterationen):
@@ -340,18 +407,49 @@ def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterati
         if k_best < k_best_g:
             bestes_g, k_best_g, e_best_g = bestes, k_best, e_best
 
-    # Unnötige Mini-Bewegungen zurücknehmen (Möbel zurückstellen, wenn es nichts verschlechtert)
-    for m in bestes_g.moebel:
-        a = ist_pos[m.name]
-        if (m.x, m.y, m.rot) == a or m.gehoert_zu:
+    # ---- Nur sinnvolle Änderungen behalten -------------------------------------------
+    def regelkosten(lay, erg):          # ohne Umstell-Aufwand: wie gut ist das Zimmer?
+        return erg.kosten + (zusatzkosten(lay) if zusatzkosten else 0.0)
+
+    def bewegt(lay):
+        out = []
+        for m in lay.moebel:
+            if m.gehoert_zu:
+                continue
+            a = ist_pos[m.name]
+            weg = math.dist((m.x, m.y), (a[0], a[1]))
+            if weg > 0.01 or m.rot % 360 != a[2] % 360:
+                out.append((weg, m.rot % 360 != a[2] % 360, m.name))
+        return sorted(out)              # kleinste Bewegung zuerst prüfen
+
+    def aufraeumen(lay, erg):
+        """Nimmt Mini-Verschiebungen und Änderungen ohne echten Gewinn zurück."""
+        geaendert = True
+        while geaendert:
+            geaendert = False
+            for weg, gedreht, name in bewegt(lay):
+                test = _zuruecksetzen(lay, name, ist_pos[name])
+                e_t = bewerte(test, gewichte)
+                if erg.machbar and not e_t.machbar:
+                    continue            # Änderung ist nötig (harte Regel)
+                mini = weg < min_weg and not gedreht
+                gewinn = regelkosten(test, e_t) - regelkosten(lay, erg)
+                if mini or gewinn < min_gewinn:
+                    lay, erg, geaendert = test, e_t, True
+                    break               # Liste neu aufbauen, Möbel beeinflussen sich gegenseitig
+        return lay, erg
+
+    # Kandidaten: (a) schrittweise verbesserte Einrichtung, (b) komplett neue gute Anordnungen,
+    # von denen nur so viel übernommen wird, wie sich lohnt. Gewinner = beste Bilanz aus Zimmer + Aufwand.
+    kandidaten = [aufraeumen(bestes_g, e_best_g)]
+    ziele = optimiere(ist, iterationen=max(600, iterationen // 2), neustarts=neustarts + 1, gewichte=gewichte,
+                      seed=rng.randrange(10 ** 9), anzahl_ergebnisse=3, ausgabe=False)
+    for ziel, e_ziel in ziele:
+        if e_ist.machbar and not e_ziel.machbar:
             continue
-        test = bestes_g.kopie()
-        t = test.nach_name(m.name)
-        t.x, t.y, t.rot = a
-        kinder_platzieren(test)
-        e_t = bewerte(test, gewichte)
-        if e_t.machbar and kosten(test, e_t) <= k_best_g + 1e-6:
-            bestes_g, k_best_g, e_best_g = test, kosten(test, e_t), e_t
+        kandidaten.append(aufraeumen(ziel, e_ziel))
+    kandidaten.append((ist.kopie(), e_ist))
+    bestes_g, e_best_g = min(kandidaten, key=lambda le: (not le[1].machbar, kosten(le[0], le[1])))
 
     aenderungen = []
     for m in bestes_g.moebel:
@@ -361,9 +459,11 @@ def korrigiere(ist: Layout, gewichte: Optional[dict[str, float]] = None, iterati
             if p is not None and p.rot % 360 == ist_pos[p.name][2] % 360:
                 r0 = m.rot
         if math.dist((m.x, m.y), (x0, y0)) > 0.08 or (r0 % 360 != m.rot % 360):
-            gruende = sorted({b.text for bs in e_ist.befunde.values() for b in bs if b.moebel == m.name})
-            if m.gehoert_zu and not gruende:
+            if m.gehoert_zu:
                 gruende = [f"wandert mit {m.gehoert_zu}"]
+            else:
+                ohne = bewerte(_zuruecksetzen(bestes_g, m.name, (x0, y0, r0)), gewichte)
+                gruende = _gruende(e_best_g, ohne, m.name, e_ist)
             aenderungen.append(Aenderung(m.name, m.typ, (round(x0, 2), round(y0, 2)), (round(m.x, 2), round(m.y, 2)),
                                          r0, m.rot, gruende))
     return bestes_g, e_best_g, aenderungen, e_ist
