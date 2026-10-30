@@ -25,6 +25,19 @@ ERKLAERUNG: dict[str, dict[str, str]] = {
             "abhilfe": "Etwa 70 cm hinter dem Schreibtisch frei lassen."},
     "H06": {"warum": "Schränke, die man nicht richtig öffnen kann, führen zu Unordnung – und Unordnung blockiert Chi.",
             "abhilfe": "Vor Fronten 60 cm frei lassen."},
+    "H08": {"warum": "Ein Schrank frei im Raum ist ein Hindernis, wirkt verloren und kann kippen. Mit der Rückseite an der "
+                     "Wand ist er stabil und lässt die Mitte frei.",
+            "abhilfe": "Schrank mit der Rückseite an eine Wand ohne Fenster stellen."},
+    "H09": {"warum": "Ein verdeckter Spiegel oder ein verdecktes Bild ist nutzlos und wirkt unordentlich.",
+            "abhilfe": "Hohes Möbel woanders hinstellen oder den Spiegel umhängen."},
+    "H10": {"warum": "Ein Schrank vor dem Fenster nimmt Licht und Ausblick; das Fenster lässt sich kaum öffnen.",
+            "abhilfe": "Hohe Möbel an fensterlose Wände; vor das Fenster höchstens niedrige Möbel unter der Fensterbank."},
+    "H11": {"warum": "Steht ein Schrank oder eine große Pflanze direkt vor der Tischkante, kann man den Tisch kaum benutzen "
+                     "und schaut gegen ein Hindernis.",
+            "abhilfe": "Mindestens 40 cm vor der Tischkante frei lassen oder den Tisch umstellen."},
+    "P01": {"warum": "Viele Menschen empfinden einen frei stehenden Schreibtisch als unpraktisch. Das Buch sieht das "
+                     "anders (Kommandoposition) – hier entscheidet dein Geschmack.",
+            "abhilfe": "Schreibtisch mit Vorder- oder Seitenkante an eine Wand stellen, möglichst mit Fenster seitlich."},
     "H07": {"warum": "Spiegel und Bilder brauchen eine echte Wand; über Türen/Fenstern stören sie Licht und Durchgang.",
             "abhilfe": "An eine geschlossene Wandfläche hängen."},
     # ------------------------------------------------------------------ Kommandoposition

@@ -1,0 +1,18 @@
+{
+ "runde": "runde1",
+ "hinweis": "Nicht fürs Training verwendet: 6 von 7 bewerteten Vorschlägen hatten praktische Mängel, die die Regelbasis damals nicht kannte. Daraus entstanden die Regeln H08–H11 und P01 (siehe tests/test_regeln.py: test_runde1_feedback_wird_erkannt).",
+ "antworten": [
+  {"name": "Kevin", "vorwissen": "etwas", "zeit": "2026-10-30T14:56:27Z",
+   "noten": {"1": 2, "2": 3, "3": 1, "4": 4, "5": 3, "6": 2, "7": 3, "8": null},
+   "kommentare": {
+    "1": "schreibtisch ist nicht an der wand",
+    "2": "kleider schrank ist nicht an der wand",
+    "3": "man kann schreibtisch nicht benutzen da das kleider schrank es blockiert",
+    "4": "schreibtisch liegt komisch aber sonst besser als vorher",
+    "5": "das monstera blockiert das schreibtisch",
+    "6": "kleiderschrank deckt den spiegel und ist nicht am wand. schreibttisch stejht komisch",
+    "7": "türe ist neben bett nicht gut. keliderschrank deckt fenster. schreib tisch umgekehrt an den wan?"},
+   "sonstiges": "Bitte die regeln an wenden von fenshui. es soll logisch sein.",
+   "neue_regeln": {"1": ["P01"], "2": ["H08", "H10"], "3": ["H11"], "5": ["H11"], "6": ["H08", "H09"], "7": ["H10"]}}
+ ]
+}

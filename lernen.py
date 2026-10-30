@@ -7,40 +7,49 @@ In PyCharm: Run 'lernen' – die Bilder öffnen sich, die Note gibst du in der K
 """
 import random
 
-from fengshui.bewertung import bericht
+from fengshui.bewertung import bericht, bewerte
 from fengshui.ml import Personalisierung
 from fengshui.optimierer import deutlich_verschieden, optimiere
+from fengshui.regeln import REGELN
 from fengshui.visualisierung import zeichne
 from mein_zimmer import erstelle_layout
 
 ANZAHL_VORSCHLAEGE = 8
 
 
-def vorschlaege(layout, n, gewichte, rng):
-    """n wirklich verschiedene, umsetzbare Vorschläge zum Bewerten.
+def _anderer_geschmack(gewichte, rng):
+    """Zufällig veränderte Gewichte der weichen Regeln: ein „anderer Geschmack“ (manche Regeln egal, manche 3×)."""
+    basis = {r.id: (gewichte or {}).get(r.id, r.gewicht) for r in REGELN if r.kategorie != "hart"}
+    return {k: w * rng.choice([0.0, 0.5, 1.0, 2.0, 3.0]) for k, w in basis.items()}
 
-    Hälfte „gut“ (gründlich optimiert), Hälfte „mittel“ (kurz optimiert, also plausibel, aber mit Schwächen) –
-    so lernt das Modell Kontraste. Zwei Vorschläge gelten nur als verschieden, wenn mindestens ein großes
-    Möbel ≥ 1 m woanders steht oder anders gedreht ist (keine Mini-Verschiebungen als „neuer“ Vorschlag).
+
+def vorschlaege(layout, n, gewichte, rng):
+    """n wirklich verschiedene, umsetzbare und logische Vorschläge zum Bewerten.
+
+    Alle Vorschläge erfüllen sämtliche harten Regeln (nichts verdeckt, Schränke an der Wand, Tisch benutzbar …).
+    Hälfte: die besten nach dem aktuellen Modell. Andere Hälfte: die besten für einen zufällig veränderten
+    Geschmack – plausibel, aber mit anderen Schwerpunkten. So lernt das Modell, welche Regeln DIR wichtig sind.
+    Zwei Vorschläge gelten nur als verschieden, wenn mindestens ein großes Möbel ≥ 1 m woanders steht oder
+    anders gedreht ist.
     """
     liste = []
 
-    def aufnehmen(lay, erg):
-        if erg.machbar and all(deutlich_verschieden(lay, x, min_weg=1.0) for x in liste):
+    def aufnehmen(lay):
+        if bewerte(lay, gewichte).machbar and all(deutlich_verschieden(lay, x, min_weg=1.0) for x in liste):
             liste.append(lay)
 
     gute = optimiere(layout, iterationen=1200, neustarts=n, gewichte=gewichte, anzahl_ergebnisse=n,
                      seed=rng.randrange(10 ** 9), ausgabe=False)
-    for lay, erg in gute:
+    for lay, _ in gute:
         if len(liste) >= (n + 1) // 2:
             break
-        aufnehmen(lay, erg)
+        aufnehmen(lay)
     versuche = 0
-    while len(liste) < n and versuche < 60:
+    while len(liste) < n and versuche < 40:
         versuche += 1
-        lay, erg = optimiere(layout, iterationen=rng.choice([40, 80, 150, 300]), neustarts=1, gewichte=gewichte,
-                             anzahl_ergebnisse=1, seed=rng.randrange(10 ** 9), ausgabe=False)[0]
-        aufnehmen(lay, erg)
+        lay, _ = optimiere(layout, iterationen=900, neustarts=1, gewichte=_anderer_geschmack(gewichte, rng),
+                           anzahl_ergebnisse=1, seed=rng.randrange(10 ** 9), ausgabe=False)[0]
+        aufnehmen(lay)
     rng.shuffle(liste)
     return liste
 

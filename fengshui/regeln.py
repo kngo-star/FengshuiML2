@@ -261,6 +261,99 @@ def _h07(layout):
     return bef
 
 
+# ------------------------------------------------------------ Praktische Regeln aus Nutzer-Feedback
+# Nicht aus dem Buch: Diese Regeln fehlten und sind beim ersten Bewertungsbogen (Runde 1) aufgefallen –
+# Vorschläge waren laut Regelbasis „machbar“, im Alltag aber unlogisch.
+STEHT_AN_WAND = {"schrank", "kommode", "regal", "sideboard", "konsole"}
+
+
+def _vor_kante(m: Moebel, tiefe: float) -> g.Rect:
+    """Streifen vor der Vorderkante eines Möbels (bei Wandobjekten: vor der Fläche, ins Zimmer)."""
+    return _zone_vorne(m, tiefe)
+
+
+@regel("H08", "Schränke stehen an der Wand",
+       "Schränke, Kommoden und Regale stehen mit der Rückseite an einer Wand – frei im Raum wirken sie wie ein "
+       "Hindernis und kippen leichter. (Praktische Regel, aus Nutzer-Feedback ergänzt.)",
+       "praktisch (Nutzer-Feedback Runde 1)", "hart", 6.0)
+def _h08(layout):
+    bef = []
+    for m in _boden(layout):
+        if m.typ in STEHT_AN_WAND and not m.gehoert_zu:
+            d = g.abstand_zur_wand(m, layout.raum, m.hinten)
+            if d > 0.10:            # bis 10 cm Abstand (Fußleiste, Kabel) ist in Ordnung
+                bef.append(Befund(min(1.0, d / 0.3), f"{m.name} steht {d:.2f} m vor der Wand statt daran", m.name))
+    return bef
+
+
+@regel("H09", "Spiegel und Bilder nicht verdecken",
+       "Vor Spiegeln, Bildern und Wandregalen steht kein hohes Möbel – sonst sind sie nutzlos. "
+       "(Praktische Regel, aus Nutzer-Feedback ergänzt.)",
+       "praktisch (Nutzer-Feedback Runde 1)", "hart", 6.0)
+def _h09(layout):
+    bef = []
+    for w in layout.moebel:
+        if not w.ist_wandobjekt:
+            continue
+        zone = _vor_kante(w, 0.5)
+        for m in _boden(layout):
+            if m.hoehe >= 0.9 and g.ueberlappung(zone, m.rechteck) > 0.01:
+                bef.append(Befund(1.0, f"{m.name} verdeckt {w.name}", w.name))
+    return bef
+
+
+@regel("H10", "Kein hohes Möbel vor dem Fenster",
+       "Schränke und andere hohe Möbel (ab 1,5 m) gehören nicht vor ein Fenster – es wird dunkel und das Fenster "
+       "lässt sich nicht mehr öffnen. (Verschärft S03, aus Nutzer-Feedback ergänzt.)",
+       "praktisch (Nutzer-Feedback Runde 1), Kap. 4/5", "hart", 6.0)
+def _h10(layout):
+    bef = []
+    raum = layout.raum
+    for f in raum.fenster:
+        x1, y1, x2, y2 = g.tuer_schwenkbereich(f, raum)
+        nx, ny = WAND_NORMALE[f.wand]
+        if nx > 0: x2 = x1 + 0.5
+        if nx < 0: x1 = x2 - 0.5
+        if ny > 0: y2 = y1 + 0.5
+        if ny < 0: y1 = y2 - 0.5
+        for m in _boden(layout):
+            if m.hoehe >= 1.5 and g.ueberlappung((x1, y1, x2, y2), m.rechteck) > 0.02:
+                bef.append(Befund(1.0, f"{m.name} ({m.hoehe:.1f} m hoch) steht vor dem Fenster ({f.wand})", m.name))
+    return bef
+
+
+@regel("H11", "Arbeitsplatz frei benutzbar",
+       "Direkt vor der Tischkante (wo du hinschaust und die Hände hast) steht nichts Hohes wie Schrank oder Pflanze. "
+       "(Praktische Regel, aus Nutzer-Feedback ergänzt.)",
+       "praktisch (Nutzer-Feedback Runde 1)", "hart", 6.0)
+def _h11(layout):
+    bef = []
+    for d in layout.finde("schreibtisch"):
+        zone = _vor_kante(d, 0.4)
+        for m in _boden(layout):
+            if m is d or m.gehoert_zu == d.name or m.typ in ("stuhl", "tischleuchte"):
+                continue
+            if m.hoehe >= 0.9 and g.ueberlappung(zone, m.rechteck) > 0.01:
+                bef.append(Befund(1.0, f"{m.name} steht direkt vor dem {d.name}", d.name))
+    return bef
+
+
+@regel("P01", "Schreibtisch an einer Wand",
+       "Viele finden einen Schreibtisch, der frei im Raum steht, unpraktisch (Kabel, Ablage, wirkt verloren). "
+       "Nicht aus dem Buch – das Buch empfiehlt sogar oft die Kommandoposition mit Blick in den Raum. "
+       "Wie wichtig dir das ist, lernt das Modell aus deinen Noten.",
+       "praktisch (Nutzer-Feedback Runde 1)", "stil", 0.5,
+       raumtypen={"buero", "schlafzimmer", "studio", "kinderzimmer", "wohnzimmer"})
+def _p01(layout):
+    bef = []
+    for d in layout.finde("schreibtisch"):
+        richtungen = [d.vorne, (d.vorne[1], -d.vorne[0]), (-d.vorne[1], d.vorne[0])]   # vorne + beide Seiten
+        abst = min(g.abstand_zur_wand(d, layout.raum, r) for r in richtungen)
+        if abst > 0.1:
+            bef.append(Befund(min(1.0, abst / 0.6), f"{d.name} steht frei im Raum ({abst:.2f} m bis zur nächsten Wand)", d.name))
+    return bef
+
+
 # ============================================================ KOMMANDOPOSITION
 @regel("K01", "Schildkröte: feste Wand im Rücken",
        "Bett mit Kopfteil an eine massive Wand, Sofa mit Rücken zur Wand (sonst niedrige Konsole dahinter), "

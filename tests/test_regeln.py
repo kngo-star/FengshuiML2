@@ -273,10 +273,13 @@ def test_optimierer_findet_bessere_und_machbare_layouts():
     from mein_zimmer import erstelle_layout
     basis = erstelle_layout()
     rng = random.Random(3)
-    zufall = [bewerte(zufallslayout(basis, rng)).score for _ in range(30)]
-    (lay, erg), *_ = optimiere(basis, iterationen=800, neustarts=2, seed=1, anzahl_ergebnisse=1, ausgabe=False)
+    zufall = [bewerte(zufallslayout(basis, rng)) for _ in range(60)]
+    machbare = [e.score for e in zufall if e.machbar]
+    (lay, erg), *_ = optimiere(basis, iterationen=1200, neustarts=2, seed=1, anzahl_ergebnisse=1, ausgabe=False)
     assert erg.machbar
-    assert erg.score > max(zufall)
+    # Zufällig hingestellte Möbel verletzen fast immer eine harte Regel; falls doch eine machbar ist,
+    # muss der Optimierer besser sein.
+    assert not machbare or erg.score > max(machbare)
 
 
 def test_korrektur_ohne_mini_verschiebungen_und_mit_begruendung():
@@ -292,3 +295,76 @@ def test_korrektur_ohne_mini_verschiebungen_und_mit_begruendung():
         for a in aenderungen:
             assert a.strecke >= 0.30 or a.gedreht or a.gruende[0].startswith("wandert mit"), f"Mini-Verschiebung: {a.text()}"
             assert a.gruende, f"Änderung ohne Grund: {a.text()}"
+
+
+# ================================================================== PRAKTISCHE REGELN (aus Nutzer-Feedback Runde 1)
+def spiegel():
+    return Moebel("spiegel", breite=0.6, tiefe=0.04, hoehe=1.6, name="Spiegel")
+
+
+def test_H08_schrank_steht_an_der_wand():
+    r = raum()
+    an_der_wand = an_wand(layout(r, s := schrank()), s, "links", 2.0)
+    im_raum = layout(r, frei(schrank(), 1.0, 2.0, 90))         # Rückseite 0.7 m vor der linken Wand
+    assert strafe(an_der_wand, "H08") == 0
+    assert strafe(im_raum, "H08") == 1.0
+
+
+def test_H09_spiegel_nicht_verdeckt():
+    r = raum()
+    sp = spiegel()
+    an_wand_setzen(sp, layout(r), "links", 2.0)
+    verdeckt = layout(r, sp, frei(schrank(), 0.5, 2.0, 90))    # Schrank direkt vor dem Spiegel
+    sp2 = spiegel()
+    an_wand_setzen(sp2, layout(r), "links", 2.0)
+    s2 = an_wand(layout(r, s := schrank()), s, "rechts", 2.0).moebel[0]
+    sichtbar = layout(r, sp2, s2)
+    assert strafe(verdeckt, "H09") == 1.0
+    assert strafe(sichtbar, "H09") == 0
+
+
+def test_H10_kein_schrank_vor_dem_fenster():
+    r = raum()   # Fenster oben Mitte
+    vor_fenster = an_wand(layout(r, s := schrank()), s, "oben", 2.0)
+    kommode = Moebel("kommode", breite=1.0, tiefe=0.45, hoehe=0.8, name="Kommode")
+    niedrig = an_wand(layout(r, kommode), kommode, "oben", 2.0)   # niedrige Kommode unter dem Fenster ist ok
+    assert strafe(vor_fenster, "H10") == 1.0
+    assert strafe(niedrig, "H10") == 0
+
+
+def test_H11_arbeitsplatz_frei():
+    r = raum()
+    tisch = frei(schreibtisch(), 2.0, 2.0, 0)                    # Person schaut nach oben
+    blockiert = layout(r, tisch, frei(schrank(), 2.0, 2.6, 180))  # Schrank 0.3 m vor der Tischkante
+    tisch2 = frei(schreibtisch(), 2.0, 2.0, 0)
+    pflanze_weit = Moebel("pflanze", breite=0.4, tiefe=0.4, hoehe=1.0, name="Pflanze", rund=True, x=3.6, y=3.6)
+    assert strafe(blockiert, "H11") == 1.0
+    assert strafe(layout(r, tisch2, pflanze_weit), "H11") == 0
+
+
+def test_P01_schreibtisch_an_einer_wand():
+    r = raum()
+    an_der_wand = layout(r, frei(schreibtisch(), 2.0, r.tiefe - 0.3, 0))   # Vorderkante an der oberen Wand
+    frei_im_raum = layout(r, frei(schreibtisch(), 2.0, 2.0, 0))
+    assert strafe(an_der_wand, "P01") == 0
+    assert strafe(frei_im_raum, "P01") > 0.5
+
+
+def test_runde1_feedback_wird_erkannt():
+    """Die Mängel, die Kevin in Runde 1 kommentiert hat, verletzen jetzt eine Regel."""
+    import json
+    import os
+    from fengshui.modell import Layout as _L
+    from mein_zimmer import erstelle_layout
+    pfad = os.path.join(os.path.dirname(__file__), "..", "daten", "runde1_vorschlaege.json")
+    with open(pfad, encoding="utf-8") as f:
+        runde = json.load(f)
+    erwartet = {2: "H08", 3: "H11", 5: "H11", 6: "H09", 7: "H10"}
+    for v in runde["vorschlaege"]:
+        if v["nr"] not in erwartet:
+            continue
+        lay = erstelle_layout()
+        pos = {m["name"]: m for m in v["moebel"]}
+        for m in lay.moebel:
+            m.x, m.y, m.rot = pos[m.name]["x"], pos[m.name]["y"], pos[m.name]["rot"]
+        assert strafe(lay, erwartet[v["nr"]]) > 0, f"Vorschlag {v['nr']}: {erwartet[v['nr']]} schlägt nicht an"

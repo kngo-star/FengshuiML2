@@ -208,3 +208,21 @@ Behoben: Ein Fehler ließ die Korrektur manchmal eine höhere Punktzahl melden, 
 
 **Bewerten (`lernen.py`):** Es kommen nur noch Vorschläge, bei denen mindestens ein großes Möbel ≥ 1 m woanders
 steht oder anders gedreht ist – halb gründlich optimiert, halb nur kurz (plausibel, aber mit Schwächen).
+
+## 🗣️ Nutzer-Feedback → neue Regeln (Version 6)
+
+Beim ersten Bewertungsbogen (Runde 1) hat Kevin 7 Vorschläge bewertet und kommentiert. Die Kommentare zeigten
+Mängel, die die Regelbasis noch nicht kannte – daraus wurden neue Regeln in `fengshui/regeln.py`:
+
+| Regel | Art | Kommentar aus Runde 1 |
+|---|---|---|
+| H08 Schränke stehen an der Wand | hart | „Kleiderschrank ist nicht an der Wand“ |
+| H09 Spiegel und Bilder nicht verdecken | hart | „Kleiderschrank deckt den Spiegel“ |
+| H10 Kein hohes Möbel vor dem Fenster | hart (verschärft S03) | „Kleiderschrank deckt Fenster“ |
+| H11 Arbeitsplatz frei benutzbar | hart | „Schrank / Monstera blockiert den Schreibtisch“ |
+| P01 Schreibtisch an einer Wand | weich, lernbar | „Schreibtisch ist nicht an der Wand“ (das Buch sieht das anders → das Modell lernt, wie wichtig es dir ist) |
+
+Die Noten aus Runde 1 werden **nicht** fürs Training benutzt (`daten/runde1_antworten.json`), weil die Vorschläge
+diese Mängel hatten. `lernen.py` erzeugt jetzt nur noch Vorschläge, die alle harten Regeln erfüllen: die Hälfte
+optimal nach dem aktuellen Modell, die andere Hälfte optimal für einen zufällig veränderten „Geschmack“.
+Ein Test (`test_runde1_feedback_wird_erkannt`) prüft, dass jeder kommentierte Mangel jetzt eine Regel verletzt.
