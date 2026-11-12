@@ -1,0 +1,37 @@
+{
+  "_anleitung": [
+    "Hier stehen deine Online-Shops und deine Partner-Kennungen (Affiliate).",
+    "Solange 'parameter' und 'deeplink' leer sind, zeigt die Einkaufsliste ganz normale Links (ohne Provision).",
+    "AMAZON: Im Amazon-PartnerNet anmelden, dann deine Tracking-ID bei parameter.tag eintragen, z. B. \"meinname-21\".",
+    "GALAXUS / IKEA / andere: Diese Programme laufen ueber Affiliate-Netzwerke (z. B. Tradedoubler, Awin).",
+    "  Das Netzwerk gibt dir eine Deeplink-Vorlage. Trage sie bei 'deeplink' ein und schreibe {url} an die Stelle,",
+    "  an der die Ziel-Adresse stehen soll. Das Programm setzt dort den (kodierten) Produkt-Link ein.",
+    "Partnerprogramme verlangen fast immer ein Mindestalter von 18 Jahren.",
+    "Sobald ein Link ein Partner-Link ist, kennzeichnet ihn die Einkaufsliste automatisch als Werbelink."
+  ],
+  "standard_shop": "ikea",
+  "kennzeichnung": "Werbelink: Wenn du ueber diesen Link etwas kaufst, bekomme ich eine kleine Provision. Fuer dich aendert sich der Preis nicht.",
+  "shops": {
+    "ikea": {
+      "name": "IKEA",
+      "suche": "https://www.ikea.com/ch/de/search/?q={q}",
+      "domain": "ikea.com",
+      "parameter": {},
+      "deeplink": ""
+    },
+    "galaxus": {
+      "name": "Galaxus",
+      "suche": "https://www.galaxus.ch/de/search?q={q}",
+      "domain": "galaxus.ch",
+      "parameter": {},
+      "deeplink": ""
+    },
+    "amazon": {
+      "name": "Amazon",
+      "suche": "https://www.amazon.de/s?k={q}",
+      "domain": "amazon.de",
+      "parameter": {"tag": ""},
+      "deeplink": ""
+    }
+  }
+}

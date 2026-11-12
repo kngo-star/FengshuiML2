@@ -63,6 +63,8 @@ def _stuehle_um_tisch(layout: Layout, tisch: Moebel, stuehle: list[Moebel]) -> N
     else:
         a_vec, n_vec, laenge, abst = (fx, fy), (rx, ry), tisch.tiefe, tisch.breite / 2
     pro_seite = max(1, int(laenge // 0.55))           # ca. 55 cm Platz pro Person
+    if tisch.rund:                                    # runder Tisch: je ein Stuhl pro Seite, rundherum verteilt
+        pro_seite = 1
     lang = stuehle[: 2 * pro_seite]
     kopf = stuehle[2 * pro_seite:]
     for vorz, gruppe in zip((1, -1), (lang[0::2], lang[1::2])):
@@ -108,6 +110,11 @@ def kinder_platzieren(layout: Layout) -> None:
         elif k.seite == "hinten":
             vor = -(p.tiefe / 2 + k.abstand + k.tiefe / 2)
             k.x, k.y = p.x + fx * vor, p.y + fy * vor
+        elif k.seite == "auf":                  # Tischleuchte auf dem Nachttisch, Pendelleuchte über dem Tisch
+            k.x, k.y = p.x, p.y
+        elif k.seite == "unter":                # Teppich: liegt unter dem Möbel, um `abstand` nach vorne geschoben
+            k.x, k.y = p.x + fx * k.abstand, p.y + fy * k.abstand
+            _klemmen(k, layout)
 
 
 def _beweglich(layout: Layout) -> list[Moebel]:
@@ -177,38 +184,50 @@ def _nachbar(layout: Layout, rng: random.Random, temperatur_anteil: float) -> La
 # ------------------------------------------------------------------ Simulated Annealing
 def optimiere(layout: Layout, iterationen: int = 3000, neustarts: int = 6,
               gewichte: Optional[dict[str, float]] = None, seed: Optional[int] = None,
-              anzahl_ergebnisse: int = 3, ausgabe: bool = True) -> list[tuple[Layout, Ergebnis]]:
-    """Gibt die besten, voneinander verschiedenen Layouts zurück (bestes zuerst)."""
+              anzahl_ergebnisse: int = 3, ausgabe: bool = True,
+              zusatzkosten=None) -> list[tuple[Layout, Ergebnis]]:
+    """Gibt die besten, voneinander verschiedenen Layouts zurück (bestes zuerst).
+
+    zusatzkosten: optionale Funktion Layout -> Kosten, die zu den Regelkosten addiert wird
+    (z. B. „Möbel sollen im Foto sichtbar sein“ beim Einrichten eines leeren Zimmers).
+    """
     rng = random.Random(seed)
-    kandidaten: list[tuple[Layout, Ergebnis]] = []
+    kandidaten: list[tuple[float, Layout, Ergebnis]] = []
     t_start, t_ende = 6.0, 0.03
+
+    def kosten(lay: Layout, erg: Ergebnis) -> float:
+        return erg.kosten + (zusatzkosten(lay) if zusatzkosten else 0.0)
 
     for lauf in range(neustarts):
         aktuell = zufallslayout(layout, rng)
         e_akt = bewerte(aktuell, gewichte)
-        bestes, e_best = aktuell, e_akt
+        k_akt = kosten(aktuell, e_akt)
+        bestes, e_best, k_best = aktuell, e_akt, k_akt
         for i in range(iterationen):
             anteil = 1 - i / iterationen
             T = t_start * (t_ende / t_start) ** (i / iterationen)
             neu = _nachbar(aktuell, rng, anteil)
             e_neu = bewerte(neu, gewichte)
-            delta = e_neu.kosten - e_akt.kosten
+            k_neu = kosten(neu, e_neu)
+            delta = k_neu - k_akt
             if delta < 0 or rng.random() < math.exp(-delta / T):
-                aktuell, e_akt = neu, e_neu
-                if e_akt.kosten < e_best.kosten:
-                    bestes, e_best = aktuell, e_akt
+                aktuell, e_akt, k_akt = neu, e_neu, k_neu
+                if k_akt < k_best:
+                    bestes, e_best, k_best = aktuell, e_akt, k_akt
         # Feinschliff: nur noch Verbesserungen annehmen (Hill Climbing mit kleinen Schritten)
         for _ in range(iterationen // 4):
             neu = _nachbar(bestes, rng, 0.1)
             e_neu = bewerte(neu, gewichte)
-            if e_neu.kosten < e_best.kosten:
-                bestes, e_best = neu, e_neu
+            k_neu = kosten(neu, e_neu)
+            if k_neu < k_best:
+                bestes, e_best, k_best = neu, e_neu, k_neu
         if ausgabe:
             status = "machbar" if e_best.machbar else "NICHT machbar"
             print(f"  Lauf {lauf + 1}/{neustarts}: Score {e_best.score:5.1f} ({status})")
-        kandidaten.append((bestes, e_best))
+        kandidaten.append((k_best, bestes, e_best))
 
-    kandidaten.sort(key=lambda le: le[1].kosten)
+    kandidaten.sort(key=lambda kle: kle[0])
+    kandidaten = [(lay, erg) for _, lay, erg in kandidaten]
     # nur deutlich verschiedene Layouts behalten
     vielfalt: list[tuple[Layout, Ergebnis]] = []
     for lay, erg in kandidaten:

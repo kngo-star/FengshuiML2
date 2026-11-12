@@ -332,7 +332,8 @@ def vorher_nachher(rgb: np.ndarray, erkl: np.ndarray, korrigiert: np.ndarray, le
 def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "ausgabe",
                      bewohner=None, gewichte: Optional[dict] = None, kamera_in_ecke: bool = True,
                      foto_von_tuer: bool = False, bekannte_breite: Optional[float] = None,
-                     preis_pro_meter: float = 1.0, zeigen: bool = True, profil: Optional[dict] = None):
+                     preis_pro_meter: float = 1.0, zeigen: bool = True, profil: Optional[dict] = None,
+                     vermessung: Optional[tuple] = None):
     """Foto rein → analysiertes, korrigiertes Foto raus.
 
     profil: optionale Angaben (Farben, Licht, Bett …) – ergänzen, was das Foto nicht zeigt.
@@ -347,8 +348,11 @@ def foto_korrigieren(pfad: str, raumtyp: str = "auto", ausgabe_ordner: str = "au
     from .optimierer import korrigiere
 
     os.makedirs(ausgabe_ordner, exist_ok=True)
-    v, erk, _ = zimmer_aus_foto(pfad, raumtyp, kamera_in_ecke=kamera_in_ecke, foto_von_tuer=foto_von_tuer,
-                                bekannte_breite=bekannte_breite)
+    if vermessung is not None:              # (Vermessung, Erkennungen) von einem früheren zimmer_aus_foto-Aufruf
+        v, erk = vermessung
+    else:
+        v, erk, _ = zimmer_aus_foto(pfad, raumtyp, kamera_in_ecke=kamera_in_ecke, foto_von_tuer=foto_von_tuer,
+                                    bekannte_breite=bekannte_breite)
     if not any(not m.ist_wandobjekt and not m.ist_deckenobjekt for m in v.layout.moebel):
         raise ValueError("Keine Möbel erkannt – ist das ein Zimmerfoto? Bett, Sofa, Schreibtisch o. Ä. "
                          "sollten gut sichtbar sein.")

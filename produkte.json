@@ -1,0 +1,1238 @@
+{
+ "_anleitung": [
+  "Produktkatalog fuer 'leeres Zimmer einrichten'. Jeder Eintrag ist ein Produkt-TYP mit Massen in Metern",
+  "[breite, tiefe, hoehe], einem Suchbegriff fuer den Shop und der Begruendung aus der Regelbasis (buch = Regel-IDs).",
+  "preis_chf = grobe Richtpreise [guenstig, mittel, gehoben] - geschaetzt, keine Live-Preise!",
+  "link: Wenn du ein bestimmtes Produkt verkaufen willst, fuege hier seinen Produkt-Link ein (und passe die Masse an).",
+  "      Bleibt link leer, fuehrt die Einkaufsliste zur Shop-Suche mit dem Suchbegriff.",
+  "shop: optional ein Shop aus affiliate.json (sonst gilt dort standard_shop).",
+  "{holz}, {stoff}, {textil}, {metall} ... im Suchbegriff werden durch die Farbe des gewaehlten Stils ersetzt."
+ ],
+ "produkte": [
+  {
+   "id": "bett-90",
+   "typ": "bett",
+   "name": "Polsterbett 90×200 cm, niedrig, gepolstertes Kopfteil",
+   "masse": [
+    1.0,
+    2.1,
+    0.45
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    180,
+    350,
+    700
+   ],
+   "suche": "Polsterbett 90x200 {stoff} gepolstertes Kopfteil",
+   "buch": [
+    "SZ-13",
+    "SZ-15"
+   ],
+   "warum": "Niedriges Bett mit breitem, gepolstertem Kopfteil: Das Kopfteil gibt Rückhalt wie eine Wand im Rücken, ein niedriges Bett wirkt ruhiger als ein hohes.",
+   "link": ""
+  },
+  {
+   "id": "bett-120",
+   "typ": "bett",
+   "name": "Polsterbett 120×200 cm, niedrig, gepolstertes Kopfteil",
+   "masse": [
+    1.3,
+    2.1,
+    0.45
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    220,
+    420,
+    850
+   ],
+   "suche": "Polsterbett 120x200 {stoff} gepolstertes Kopfteil",
+   "buch": [
+    "SZ-13",
+    "SZ-15"
+   ],
+   "warum": "Niedriges Bett mit breitem, gepolstertem Kopfteil: Das Kopfteil gibt Rückhalt wie eine Wand im Rücken, ein niedriges Bett wirkt ruhiger als ein hohes.",
+   "link": ""
+  },
+  {
+   "id": "bett-140",
+   "typ": "bett",
+   "name": "Polsterbett 140×200 cm, niedrig, gepolstertes Kopfteil",
+   "masse": [
+    1.5,
+    2.1,
+    0.45
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    250,
+    480,
+    950
+   ],
+   "suche": "Polsterbett 140x200 {stoff} gepolstertes Kopfteil",
+   "buch": [
+    "SZ-13",
+    "SZ-15"
+   ],
+   "warum": "Niedriges Bett mit breitem, gepolstertem Kopfteil: Das Kopfteil gibt Rückhalt wie eine Wand im Rücken, ein niedriges Bett wirkt ruhiger als ein hohes.",
+   "link": ""
+  },
+  {
+   "id": "bett-160",
+   "typ": "bett",
+   "name": "Polsterbett 160×200 cm, niedrig, gepolstertes Kopfteil",
+   "masse": [
+    1.7000000000000002,
+    2.1,
+    0.45
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    300,
+    560,
+    1100
+   ],
+   "suche": "Polsterbett 160x200 {stoff} gepolstertes Kopfteil",
+   "buch": [
+    "SZ-13",
+    "SZ-15"
+   ],
+   "warum": "Niedriges Bett mit breitem, gepolstertem Kopfteil: Das Kopfteil gibt Rückhalt wie eine Wand im Rücken, ein niedriges Bett wirkt ruhiger als ein hohes.",
+   "link": ""
+  },
+  {
+   "id": "bett-180",
+   "typ": "bett",
+   "name": "Polsterbett 180×200 cm, niedrig, gepolstertes Kopfteil",
+   "masse": [
+    1.9000000000000001,
+    2.1,
+    0.45
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    340,
+    620,
+    1250
+   ],
+   "suche": "Polsterbett 180x200 {stoff} gepolstertes Kopfteil",
+   "buch": [
+    "SZ-13",
+    "SZ-15"
+   ],
+   "warum": "Niedriges Bett mit breitem, gepolstertem Kopfteil: Das Kopfteil gibt Rückhalt wie eine Wand im Rücken, ein niedriges Bett wirkt ruhiger als ein hohes.",
+   "link": ""
+  },
+  {
+   "id": "nachttisch-rund",
+   "typ": "nachttisch",
+   "name": "Nachttisch rund, geschlossen, Holz",
+   "masse": [
+    0.45,
+    0.45,
+    0.45
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    40,
+    90,
+    190
+   ],
+   "suche": "Nachttisch rund {holz} geschlossen",
+   "buch": [
+    "SZ-45",
+    "SZ-26",
+    "GL-16"
+   ],
+   "warum": "Zwei gleiche, runde Nachttische: rund heisst keine spitzen Ecken am Kopf, als Paar geben sie dem Bett links und rechts Halt. Geschlossen, nicht aus Glas und nicht höher als die Matratze.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "schrank-100",
+   "typ": "schrank",
+   "name": "Kleiderschrank 100 cm breit, geschlossene Türen",
+   "masse": [
+    1.0,
+    0.6,
+    2.0
+   ],
+   "material": "holz_hell",
+   "element": "metall",
+   "preis_chf": [
+    150,
+    320,
+    700
+   ],
+   "suche": "Kleiderschrank 100 cm {holz_hell} Drehtüren",
+   "buch": [
+    "SZ-41",
+    "SZ-42",
+    "OR-06"
+   ],
+   "warum": "Ein einziger grosser Schrank mit geschlossenen Türen statt mehrerer kleiner: weniger Ecken, mehr Ruhe. Gross genug wählen, damit er nicht vollgestopft ist.",
+   "link": ""
+  },
+  {
+   "id": "schrank-150",
+   "typ": "schrank",
+   "name": "Kleiderschrank 150 cm breit, geschlossene Türen",
+   "masse": [
+    1.5,
+    0.6,
+    2.0
+   ],
+   "material": "holz_hell",
+   "element": "metall",
+   "preis_chf": [
+    220,
+    450,
+    950
+   ],
+   "suche": "Kleiderschrank 150 cm {holz_hell} Drehtüren",
+   "buch": [
+    "SZ-41",
+    "SZ-42",
+    "OR-06"
+   ],
+   "warum": "Ein einziger grosser Schrank mit geschlossenen Türen statt mehrerer kleiner: weniger Ecken, mehr Ruhe. Gross genug wählen, damit er nicht vollgestopft ist.",
+   "link": ""
+  },
+  {
+   "id": "schrank-200",
+   "typ": "schrank",
+   "name": "Kleiderschrank 200 cm breit, geschlossene Türen",
+   "masse": [
+    2.0,
+    0.6,
+    2.0
+   ],
+   "material": "holz_hell",
+   "element": "metall",
+   "preis_chf": [
+    300,
+    600,
+    1300
+   ],
+   "suche": "Kleiderschrank 200 cm {holz_hell} Drehtüren",
+   "buch": [
+    "SZ-41",
+    "SZ-42",
+    "OR-06"
+   ],
+   "warum": "Ein einziger grosser Schrank mit geschlossenen Türen statt mehrerer kleiner: weniger Ecken, mehr Ruhe. Gross genug wählen, damit er nicht vollgestopft ist.",
+   "link": ""
+  },
+  {
+   "id": "kommode-100",
+   "typ": "kommode",
+   "name": "Kommode 100 cm, niedrig, geschlossen",
+   "masse": [
+    1.0,
+    0.45,
+    0.8
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    90,
+    220,
+    480
+   ],
+   "suche": "Kommode 100 cm {holz} Schubladen",
+   "buch": [
+    "EI5-03",
+    "BU-18"
+   ],
+   "warum": "Stauraum gehört ins untere Drittel der Wand. Darüber bleibt Platz für ein Bild oder eine Lampe.",
+   "link": ""
+  },
+  {
+   "id": "sideboard-160",
+   "typ": "kommode",
+   "name": "Sideboard 160 cm, niedrig, geschlossen",
+   "masse": [
+    1.6,
+    0.42,
+    0.75
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    150,
+    380,
+    850
+   ],
+   "suche": "Sideboard 160 cm {holz} geschlossen",
+   "buch": [
+    "WZ-18",
+    "EZ-19",
+    "EI5-03"
+   ],
+   "warum": "Ein niedriges Sideboard an der Wand: Stauraum im unteren Drittel und eine gute Basis für Lampe und Bild.",
+   "link": ""
+  },
+  {
+   "id": "regal-niedrig",
+   "typ": "regal",
+   "name": "Regal niedrig mit Türen, 80 cm",
+   "masse": [
+    0.8,
+    0.38,
+    1.1
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    70,
+    160,
+    360
+   ],
+   "suche": "Regal niedrig mit Türen 80 cm {holz}",
+   "buch": [
+    "BU-18",
+    "BU-19",
+    "EI5-03"
+   ],
+   "warum": "Niedrig und geschlossen statt hoch und offen: Bücher bleiben in Reichweite, ohne dass offene Regalbretter Unruhe in den Raum bringen.",
+   "link": ""
+  },
+  {
+   "id": "schreibtisch-100",
+   "typ": "schreibtisch",
+   "name": "Schreibtisch 100×60 cm, matt, naturfarben",
+   "masse": [
+    1.0,
+    0.6,
+    0.75
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    60,
+    150,
+    330
+   ],
+   "suche": "Schreibtisch 100 cm {holz} matt",
+   "buch": [
+    "BU-17",
+    "BU-04"
+   ],
+   "warum": "Helle, matte Oberfläche in Naturfarbe: spiegelnde Tische bringen zu viel Unruhe. Der Tisch steht so, dass du die Tür siehst und eine Wand im Rücken hast.",
+   "link": ""
+  },
+  {
+   "id": "schreibtisch-120",
+   "typ": "schreibtisch",
+   "name": "Schreibtisch 120×60 cm, matt, naturfarben",
+   "masse": [
+    1.2,
+    0.6,
+    0.75
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    70,
+    180,
+    400
+   ],
+   "suche": "Schreibtisch 120 cm {holz} matt",
+   "buch": [
+    "BU-17",
+    "BU-04"
+   ],
+   "warum": "Helle, matte Oberfläche in Naturfarbe: spiegelnde Tische bringen zu viel Unruhe. Der Tisch steht so, dass du die Tür siehst und eine Wand im Rücken hast.",
+   "link": ""
+  },
+  {
+   "id": "schreibtisch-140",
+   "typ": "schreibtisch",
+   "name": "Schreibtisch 140×70 cm, matt, naturfarben",
+   "masse": [
+    1.4,
+    0.7,
+    0.75
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    90,
+    230,
+    520
+   ],
+   "suche": "Schreibtisch 140 cm {holz} matt",
+   "buch": [
+    "BU-17",
+    "BU-04"
+   ],
+   "warum": "Helle, matte Oberfläche in Naturfarbe: spiegelnde Tische bringen zu viel Unruhe. Der Tisch steht so, dass du die Tür siehst und eine Wand im Rücken hast.",
+   "link": ""
+  },
+  {
+   "id": "schreibtisch-160",
+   "typ": "schreibtisch",
+   "name": "Schreibtisch 160×70 cm, matt, naturfarben",
+   "masse": [
+    1.6,
+    0.7,
+    0.75
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    120,
+    290,
+    650
+   ],
+   "suche": "Schreibtisch 160 cm {holz} matt",
+   "buch": [
+    "BU-17",
+    "BU-04"
+   ],
+   "warum": "Helle, matte Oberfläche in Naturfarbe: spiegelnde Tische bringen zu viel Unruhe. Der Tisch steht so, dass du die Tür siehst und eine Wand im Rücken hast.",
+   "link": ""
+  },
+  {
+   "id": "stuhl-buero",
+   "typ": "zubehoer",
+   "name": "Schreibtischstuhl mit hoher Rückenlehne",
+   "masse": [
+    0.6,
+    0.6,
+    1.1
+   ],
+   "material": "stoff_dunkel",
+   "element": "wasser",
+   "preis_chf": [
+    80,
+    220,
+    550
+   ],
+   "suche": "Bürostuhl hohe Rückenlehne {stoff_dunkel}",
+   "buch": [
+    "BU-22"
+   ],
+   "warum": "Eine hohe, feste Lehne gibt Rückhalt beim Arbeiten.",
+   "variante": "stuhl_am_tisch",
+   "link": ""
+  },
+  {
+   "id": "sofa-2",
+   "typ": "sofa",
+   "name": "2-Sitzer-Sofa mit hoher, fester Lehne",
+   "masse": [
+    1.6,
+    0.9,
+    0.82
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    280,
+    600,
+    1400
+   ],
+   "suche": "2-Sitzer Sofa {stoff} hohe Lehne",
+   "buch": [
+    "WZ-07",
+    "WZ-10"
+   ],
+   "warum": "Ein Hauptsofa mit kräftiger Lehne ist der Anker des Wohnzimmers. Es steht mit dem Rücken zur Wand und mit Blick zur Tür.",
+   "link": ""
+  },
+  {
+   "id": "sofa-3",
+   "typ": "sofa",
+   "name": "3-Sitzer-Sofa mit hoher, fester Lehne",
+   "masse": [
+    2.1,
+    0.95,
+    0.82
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    380,
+    800,
+    1900
+   ],
+   "suche": "3-Sitzer Sofa {stoff} hohe Lehne",
+   "buch": [
+    "WZ-07",
+    "WZ-10"
+   ],
+   "warum": "Ein Hauptsofa mit kräftiger Lehne ist der Anker des Wohnzimmers. Es steht mit dem Rücken zur Wand und mit Blick zur Tür.",
+   "link": ""
+  },
+  {
+   "id": "sessel",
+   "typ": "sessel",
+   "name": "Sessel mit Armlehnen",
+   "masse": [
+    0.8,
+    0.8,
+    0.82
+   ],
+   "material": "stoff_akzent",
+   "element": "holz",
+   "preis_chf": [
+    120,
+    320,
+    800
+   ],
+   "suche": "Sessel {stoff_akzent} Armlehnen",
+   "buch": [
+    "WZ-13",
+    "WZ-12",
+    "WZ-02"
+   ],
+   "warum": "Der Sessel schliesst den Sitzkreis: Sofa und Sessel schauen sich an, das Sofa steht nicht allein.",
+   "link": ""
+  },
+  {
+   "id": "couchtisch-rund",
+   "typ": "couchtisch",
+   "name": "Couchtisch rund, 80 cm, Holz",
+   "masse": [
+    0.8,
+    0.8,
+    0.4
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    60,
+    180,
+    450
+   ],
+   "suche": "Couchtisch rund 80 cm {holz}",
+   "buch": [
+    "WZ-14"
+   ],
+   "warum": "Der Couchtisch ist die Mitte der Sitzgruppe. Rund, damit keine Ecke auf jemanden zeigt. Am besten steht etwas Lebendiges darauf (Blumen, Obst).",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "tv-lowboard",
+   "typ": "tv",
+   "name": "Lowboard 140 cm, 50 cm hoch (für den Fernseher)",
+   "masse": [
+    1.4,
+    0.4,
+    1.15
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    90,
+    240,
+    550
+   ],
+   "suche": "TV Lowboard 140 cm {holz}",
+   "buch": [
+    "WZ-16"
+   ],
+   "warum": "Der Fernseher steht so tief wie möglich auf einem Möbel, nicht im Mittelpunkt des Raums und nicht vor dem Fenster.",
+   "link": ""
+  },
+  {
+   "id": "esstisch-rund-110",
+   "typ": "esstisch",
+   "name": "Esstisch rund, 110 cm, Holz (für 4 Personen)",
+   "masse": [
+    1.1,
+    1.1,
+    0.75
+   ],
+   "material": "holz",
+   "element": "erde",
+   "preis_chf": [
+    150,
+    380,
+    900
+   ],
+   "suche": "Esstisch rund 110 cm {holz} massiv",
+   "buch": [
+    "EZ-12",
+    "EZ-03"
+   ],
+   "warum": "Ein runder Tisch hat keine Ecken und keinen 'Chefplatz'. Holz statt Glas. Er steht frei in der Raummitte.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "esstisch-rund-130",
+   "typ": "esstisch",
+   "name": "Esstisch rund, 130 cm, Holz (für 4 Personen, grosszügig)",
+   "masse": [
+    1.3,
+    1.3,
+    0.75
+   ],
+   "material": "holz",
+   "element": "erde",
+   "preis_chf": [
+    220,
+    520,
+    1200
+   ],
+   "suche": "Esstisch rund 130 cm {holz} massiv",
+   "buch": [
+    "EZ-12",
+    "EZ-03"
+   ],
+   "warum": "Ein runder Tisch hat keine Ecken und keinen 'Chefplatz'. Holz statt Glas. Er steht frei in der Raummitte.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "stuhl-ess",
+   "typ": "stuhl",
+   "name": "Esszimmerstuhl, stabil, gepolstert",
+   "masse": [
+    0.45,
+    0.5,
+    0.85
+   ],
+   "material": "stoff",
+   "element": "erde",
+   "preis_chf": [
+    45,
+    110,
+    260
+   ],
+   "suche": "Esszimmerstuhl {stoff} gepolstert Holzbeine",
+   "buch": [
+    "EZ-15",
+    "EZ-16",
+    "EZ-17"
+   ],
+   "warum": "Alle Stühle gleich und in gerader Anzahl, stabil und bequem. Keine Plastikstühle.",
+   "link": ""
+  },
+  {
+   "id": "teppich-140x200",
+   "typ": "teppich",
+   "name": "Teppich 140×200 cm, ruhiges Muster",
+   "masse": [
+    1.4,
+    2.0,
+    0.012
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    50,
+    130,
+    330
+   ],
+   "suche": "Teppich 140x200 {textil} kurzflor",
+   "buch": [
+    "SZ-06",
+    "WZ-21"
+   ],
+   "warum": "Der Teppich fasst die Möbelgruppe zu einer Zone zusammen. Lieber ein grosser als viele kleine.",
+   "link": ""
+  },
+  {
+   "id": "teppich-160x230",
+   "typ": "teppich",
+   "name": "Teppich 160×230 cm, ruhiges Muster",
+   "masse": [
+    1.6,
+    2.3,
+    0.012
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    70,
+    180,
+    450
+   ],
+   "suche": "Teppich 160x230 {textil} kurzflor",
+   "buch": [
+    "SZ-06",
+    "WZ-21"
+   ],
+   "warum": "Der Teppich fasst die Möbelgruppe zu einer Zone zusammen. Lieber ein grosser als viele kleine.",
+   "link": ""
+  },
+  {
+   "id": "teppich-200x290",
+   "typ": "teppich",
+   "name": "Teppich 200×290 cm, ruhiges Muster",
+   "masse": [
+    2.0,
+    2.9,
+    0.012
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    110,
+    280,
+    700
+   ],
+   "suche": "Teppich 200x290 {textil} kurzflor",
+   "buch": [
+    "SZ-06",
+    "WZ-21"
+   ],
+   "warum": "Der Teppich fasst die Möbelgruppe zu einer Zone zusammen. Lieber ein grosser als viele kleine.",
+   "link": ""
+  },
+  {
+   "id": "teppich-rund-160",
+   "typ": "teppich",
+   "name": "Teppich rund, 160 cm",
+   "masse": [
+    1.6,
+    1.6,
+    0.012
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    60,
+    150,
+    380
+   ],
+   "suche": "Teppich rund 160 cm {textil}",
+   "buch": [
+    "WZ-21",
+    "EZ-04"
+   ],
+   "warum": "Ein runder Teppich unter dem runden Tisch betont die Mitte des Raums. Erdige, gedämpfte Töne.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "teppich-rund-200",
+   "typ": "teppich",
+   "name": "Teppich rund, 200 cm",
+   "masse": [
+    2.0,
+    2.0,
+    0.012
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    90,
+    220,
+    550
+   ],
+   "suche": "Teppich rund 200 cm {textil}",
+   "buch": [
+    "WZ-21",
+    "EZ-04"
+   ],
+   "warum": "Ein runder Teppich unter dem runden Tisch betont die Mitte des Raums. Erdige, gedämpfte Töne.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "tischleuchte",
+   "typ": "tischleuchte",
+   "name": "Tischleuchte mit Stoffschirm (diffuses Licht)",
+   "masse": [
+    0.25,
+    0.25,
+    0.45
+   ],
+   "material": "leuchte",
+   "element": "feuer",
+   "preis_chf": [
+    15,
+    45,
+    120
+   ],
+   "suche": "Tischleuchte Stoffschirm {metall}",
+   "buch": [
+    "LI-03",
+    "LI-04",
+    "SZ-26"
+   ],
+   "warum": "Mehrere niedrige Lichtquellen statt einem Deckenlicht. Der Schirm macht das Licht weich (diffus).",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "stehleuchte",
+   "typ": "stehleuchte",
+   "name": "Stehleuchte mit Schirm",
+   "masse": [
+    0.35,
+    0.35,
+    1.6
+   ],
+   "material": "leuchte",
+   "element": "feuer",
+   "preis_chf": [
+    30,
+    90,
+    250
+   ],
+   "suche": "Stehleuchte Stoffschirm {metall}",
+   "buch": [
+    "LI-05",
+    "LI-04"
+   ],
+   "warum": "Steht in einer Ecke: Etwa drei von vier Raumecken sollen beleuchtet sein, eine bleibt bewusst im Schatten.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "stehleuchte-uplight",
+   "typ": "stehleuchte",
+   "name": "Deckenfluter (Licht an Wand und Decke)",
+   "masse": [
+    0.3,
+    0.3,
+    1.8
+   ],
+   "material": "leuchte",
+   "element": "feuer",
+   "preis_chf": [
+    35,
+    100,
+    280
+   ],
+   "suche": "Deckenfluter Stehleuchte {metall} dimmbar",
+   "buch": [
+    "LI-11",
+    "LI-05"
+   ],
+   "warum": "Ein Deckenfluter wirft das Licht an Wand und Decke. Das gibt am Arbeitsplatz gleichmässiges Licht ohne Schatten.",
+   "rund": true,
+   "variante": "uplight",
+   "link": ""
+  },
+  {
+   "id": "pendelleuchte-rund",
+   "typ": "pendelleuchte",
+   "name": "Pendelleuchte rund (Kugel)",
+   "masse": [
+    0.45,
+    0.45,
+    0.4
+   ],
+   "material": "leuchte",
+   "element": "metall",
+   "preis_chf": [
+    35,
+    110,
+    320
+   ],
+   "suche": "Pendelleuchte Kugel {metall} rund",
+   "buch": [
+    "LI-07",
+    "LI-08",
+    "EZ-05",
+    "WZ-20"
+   ],
+   "warum": "Nur eine Hängeleuchte pro Raum, rund, und zwar mittig über dem Tisch – nie über einem Sitzplatz oder dem Bett.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "leuchtmittel-2700k",
+   "typ": "zubehoer",
+   "name": "LED-Leuchtmittel 2700 K, opal (warmweiss, matt)",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "glas",
+   "element": "feuer",
+   "preis_chf": [
+    4,
+    7,
+    14
+   ],
+   "suche": "LED E27 2700K opal warmweiss dimmbar",
+   "buch": [
+    "LI-02",
+    "LI-01",
+    "LI-03"
+   ],
+   "warum": "Alle Lampen im Raum mit derselben, warmen Lichtfarbe (2700 K). Matte (opale) Leuchtmittel blenden nicht.",
+   "shop": "galaxus",
+   "link": ""
+  },
+  {
+   "id": "pflanze-monstera",
+   "typ": "pflanze",
+   "name": "Monstera im Topf (grosse, runde Blätter)",
+   "masse": [
+    0.5,
+    0.5,
+    1.0
+   ],
+   "material": "pflanze",
+   "element": "holz",
+   "preis_chf": [
+    25,
+    50,
+    110
+   ],
+   "suche": "Monstera deliciosa Zimmerpflanze mit Topf",
+   "buch": [
+    "PF-07",
+    "PF-04",
+    "GL-06"
+   ],
+   "warum": "Pflanzen mit grossen, weichen, runden Blättern bringen Leben (Holz-Element). Sie stehen als Gruppe am Fenster.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "pflanze-geldbaum",
+   "typ": "pflanze",
+   "name": "Geldbaum im Topf (runde Blätter)",
+   "masse": [
+    0.4,
+    0.4,
+    0.7
+   ],
+   "material": "pflanze",
+   "element": "holz",
+   "preis_chf": [
+    15,
+    35,
+    80
+   ],
+   "suche": "Geldbaum Crassula Zimmerpflanze mit Topf",
+   "buch": [
+    "PF-07",
+    "PF-04"
+   ],
+   "warum": "Zweite Pflanze für die Gruppe am Fenster: Pflanzen wirken zusammen stärker als verstreut. Echte Pflanzen, keine Kunstpflanzen.",
+   "rund": true,
+   "link": ""
+  },
+  {
+   "id": "bild-landschaft",
+   "typ": "bild",
+   "name": "Bild quer, ruhige Landschaft, 90×60 cm, leichter Rahmen",
+   "masse": [
+    0.9,
+    0.03,
+    0.6
+   ],
+   "material": "bild",
+   "element": "wasser",
+   "preis_chf": [
+    25,
+    80,
+    250
+   ],
+   "suche": "Wandbild Landschaft ruhig 90x60 Leinwand",
+   "buch": [
+    "KS-05",
+    "KS-19",
+    "KS-18"
+   ],
+   "warum": "Landschaften wirken wie ein Fenster, das Querformat macht den Raum breiter. Leinwand statt schwerem Glasrahmen. Hängt auf Augenhöhe und nicht über dem Kopfteil.",
+   "link": ""
+  },
+  {
+   "id": "bild-froehlich",
+   "typ": "bild",
+   "name": "Bild quer, fröhliches Motiv, 90×60 cm",
+   "masse": [
+    0.9,
+    0.03,
+    0.6
+   ],
+   "material": "bild",
+   "element": "feuer",
+   "preis_chf": [
+    25,
+    80,
+    250
+   ],
+   "suche": "Wandbild Stillleben Früchte 90x60 Leinwand",
+   "buch": [
+    "EZ-07",
+    "KS-18"
+   ],
+   "warum": "Im Esszimmer passen fröhliche, lebendige Bilder – gern mit appetitlichen Motiven.",
+   "variante": "froehlich",
+   "link": ""
+  },
+  {
+   "id": "spiegel-wand",
+   "typ": "spiegel",
+   "name": "Wandspiegel 70×120 cm, ganz und unverzerrt",
+   "masse": [
+    0.7,
+    0.04,
+    1.2
+   ],
+   "material": "spiegel",
+   "element": "wasser",
+   "preis_chf": [
+    40,
+    110,
+    300
+   ],
+   "suche": "Wandspiegel 70x120 Rahmen {holz}",
+   "buch": [
+    "WZ-05",
+    "EZ-06",
+    "SP-02",
+    "EI-13"
+   ],
+   "warum": "Im Wohn- und Esszimmer sind Spiegel gut, wenn sie etwas Schönes zeigen (den Tisch, Pflanzen) – nie die Tür und nie direkt gegenüber der Tür.",
+   "link": ""
+  },
+  {
+   "id": "pinnwand",
+   "typ": "pinnwand",
+   "name": "Pinnwand 80×60 cm",
+   "masse": [
+    0.8,
+    0.03,
+    0.6
+   ],
+   "material": "kork",
+   "element": "erde",
+   "preis_chf": [
+    15,
+    35,
+    80
+   ],
+   "suche": "Pinnwand Kork 80x60 Holzrahmen",
+   "buch": [
+    "BU-23"
+   ],
+   "warum": "Zettel und Notizen gehören gesammelt auf EINE Pinnwand statt verstreut an die Wand.",
+   "link": ""
+  },
+  {
+   "id": "vorhang-verdunkelung",
+   "typ": "zubehoer",
+   "name": "Verdunkelungsvorhang, bodenlang (Paar)",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    30,
+    80,
+    200
+   ],
+   "suche": "Verdunkelungsvorhang bodenlang {textil} 2er Set",
+   "buch": [
+    "SZ-08",
+    "SZ-50"
+   ],
+   "warum": "Zum Schlafen werden die Vorhänge geschlossen: Fenster bringen Bewegung in den Raum, schwere Vorhänge beruhigen.",
+   "variante": "vorhang",
+   "link": ""
+  },
+  {
+   "id": "vorhang-leicht",
+   "typ": "zubehoer",
+   "name": "Vorhang leicht, bodenlang (Paar)",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "textil",
+   "element": "erde",
+   "preis_chf": [
+    20,
+    60,
+    160
+   ],
+   "suche": "Vorhang halbtransparent bodenlang {textil} 2er Set",
+   "buch": [
+    "WZ-21"
+   ],
+   "warum": "Bodenlange Vorhänge lassen den Raum höher und grösser wirken, ohne das Licht zu nehmen.",
+   "variante": "vorhang",
+   "link": ""
+  },
+  {
+   "id": "bettwaesche-hell",
+   "typ": "zubehoer",
+   "name": "Bettwäsche hell und ruhig (Baumwolle)",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "textil",
+   "element": "metall",
+   "preis_chf": [
+    25,
+    60,
+    140
+   ],
+   "suche": "Bettwäsche Baumwolle {textil} uni",
+   "buch": [
+    "SZ-17"
+   ],
+   "warum": "Helle, ruhige Farben am Bett. Wenn dunkel, dann nicht schwarz.",
+   "link": ""
+  },
+  {
+   "id": "kissen-dunkelblau",
+   "typ": "zubehoer",
+   "name": "Kissen oder Plaid in Dunkelblau",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "textil",
+   "element": "wasser",
+   "preis_chf": [
+    10,
+    30,
+    70
+   ],
+   "suche": "Kissenbezug dunkelblau Samt 50x50",
+   "buch": [
+    "GL-03",
+    "KS-20"
+   ],
+   "warum": "Ein kleiner dunkelblauer Akzent bringt das Wasser-Element in den Raum (alle fünf Elemente sollen vertreten sein).",
+   "link": ""
+  },
+  {
+   "id": "schale-metall",
+   "typ": "zubehoer",
+   "name": "Runde Schale aus Metall",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "metall",
+   "element": "metall",
+   "preis_chf": [
+    10,
+    30,
+    80
+   ],
+   "suche": "Dekoschale rund Metall {metall}",
+   "buch": [
+    "GL-03"
+   ],
+   "warum": "Rund und glänzend: ein kleiner Akzent für das Metall-Element.",
+   "link": ""
+  },
+  {
+   "id": "vase-terrakotta",
+   "typ": "zubehoer",
+   "name": "Vase aus Keramik in Terrakotta",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "keramik",
+   "element": "feuer",
+   "preis_chf": [
+    10,
+    30,
+    80
+   ],
+   "suche": "Vase Keramik terrakotta",
+   "buch": [
+    "GL-03",
+    "KS-20"
+   ],
+   "warum": "Ein kleiner, warmer Farbakzent für das Feuer-Element – sparsam eingesetzt.",
+   "link": ""
+  },
+  {
+   "id": "schale-keramik",
+   "typ": "zubehoer",
+   "name": "Schale aus Keramik in Sand/Beige",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "keramik",
+   "element": "erde",
+   "preis_chf": [
+    10,
+    25,
+    70
+   ],
+   "suche": "Schale Keramik beige Steinzeug",
+   "buch": [
+    "GL-03"
+   ],
+   "warum": "Erdige Töne und rohe Oberflächen stehen für das Erde-Element (Ruhe, Erdung).",
+   "link": ""
+  },
+  {
+   "id": "schale-holz",
+   "typ": "zubehoer",
+   "name": "Schale oder Tablett aus Holz",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "holz",
+   "element": "holz",
+   "preis_chf": [
+    10,
+    25,
+    70
+   ],
+   "suche": "Dekoschale Holz {holz}",
+   "buch": [
+    "GL-03"
+   ],
+   "warum": "Naturholz bringt das Holz-Element in den Raum, ohne Pflanzen ins Schlafzimmer zu stellen.",
+   "link": ""
+  },
+  {
+   "id": "obstschale",
+   "typ": "zubehoer",
+   "name": "Obstschale (immer gefüllt)",
+   "masse": [
+    0,
+    0,
+    0
+   ],
+   "material": "keramik",
+   "element": "erde",
+   "preis_chf": [
+    12,
+    30,
+    80
+   ],
+   "suche": "Obstschale Keramik gross",
+   "buch": [
+    "EZ-08",
+    "WZ-14"
+   ],
+   "warum": "Auf dem Tisch steht immer etwas Lebendiges – Obst oder Blumen zeigen Fülle. Der Tisch ist nie leer.",
+   "link": ""
+  }
+ ]
+}

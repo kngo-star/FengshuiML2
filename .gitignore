@@ -18,6 +18,8 @@ mein_zimmer.jpg
 *.png
 !ausgabe/alle_varianten.png
 !auswertung/*.png
+!beispiele/*.jpg
+ausgabe/*einkaufsliste*
 meine_bewertungen.json
 # Trainiertes Gradient-Boosting-Modell (wird mit surrogat_trainieren.py erzeugt)
 daten/*.joblib

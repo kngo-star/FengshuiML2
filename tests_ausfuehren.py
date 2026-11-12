@@ -7,11 +7,12 @@ In PyCharm: Rechtsklick auf tests_ausfuehren.py -> Run 'tests_ausfuehren'
 import time
 import traceback
 
-from tests import test_regeln
+from tests import test_einrichten, test_regeln
 
 
 def main():
-    tests = [(n, f) for n, f in vars(test_regeln).items() if n.startswith("test_") and callable(f)]
+    tests = [(n, f) for modul in (test_regeln, test_einrichten)
+             for n, f in vars(modul).items() if n.startswith("test_") and callable(f)]
     ok, fehler = 0, []
     start = time.time()
     for name, f in tests:

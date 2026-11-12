@@ -17,6 +17,50 @@ einrichtet (Form-Schule: Kommandoposition, Chi-Fluss, fünf Elemente).
 Der Raumtyp (Schlafzimmer, Wohnzimmer, Büro, Küche, Bad …) wird **automatisch erkannt**.
 Fotos bleiben auf deinem Computer – `fotos_rein/` und `fotos_raus/` werden nicht zu GitHub hochgeladen.
 
+## 🛋 Leeres Zimmer einrichten + Einkaufsliste (`zimmer_einrichten.py`)
+
+**Foto eines leeren Raums rein → eingerichtetes Zimmer mit Möbeln und Deko raus, dazu eine Einkaufsliste
+mit Shop-Links.**
+
+![Beispiel: nachgebautes leeres Zimmer, als Wohnzimmer eingerichtet](beispiele/einrichten_demo.jpg)
+
+1. Foto als `leeres_zimmer.jpg` in den Projektordner legen (oder gar kein Foto: dann läuft ein Demo-Zimmer).
+2. In `zimmer_einrichten.py` oben `RAUMTYP`, `STIL` und `BUDGET` wählen → Rechtsklick → **Run**.
+3. In `ausgabe/` erscheinen `…_eingerichtet.jpg`, `…_eingerichtet_nummern.jpg`, `…_grundriss.png`,
+   `…_uebersicht.png` und **`…_einkaufsliste.html`** (öffnet sich automatisch).
+
+Auch `start.py` kann das: Liegt in `fotos_rein` ein Foto **ohne Möbel**, wird der Raum eingerichtet
+(Raumtyp aus dem Dateinamen, z. B. `wohnzimmer_leer.jpg`, sonst `LEERES_ZIMMER_WIRD`).
+
+**So funktioniert es** (`fengshui/einrichten.py`):
+
+| Schritt | Was passiert | Datei |
+|---|---|---|
+| 1 Vermessen | Raumgröße, Tür, Fenster und Kamera aus dem Foto | `foto3d.py` |
+| 2 Auswählen | Einrichtung je Raumtyp und Raumgröße aus dem Katalog – jede Wahl folgt einer Buchregel | `einrichten.py`, `produkte.json` |
+| 3 Platzieren | Der Optimierer stellt alles mit der Regelbasis; passt etwas nicht, fällt das Unwichtigste weg | `optimierer.py`, `regeln.py` |
+| 4 Zeichnen | Möbel als 3D-Modelle in echten Maßen perspektivisch ins Foto (z-Buffer, Schatten, Lampenschein) | `render3d.py` |
+| 5 Einkaufen | Nummerierte Einkaufsliste: Produkt, Maße, Buchregel, Begründung, Richtpreis, Shop-Link | `katalog.py`, `affiliate.json` |
+
+**Beispiele für Auswahlregeln aus dem Buch:** gepolstertes Kopfteil und niedriges Bett (SZ-13, SZ-15), zwei gleiche,
+runde Nachttische (SZ-45, SZ-26), im Schlafzimmer keine Pflanzen, Spiegel oder Bildschirme (SZ-12, SZ-32, SZ-03),
+runder Couch- und Esstisch (WZ-14, EZ-12), gerade Stuhlzahl (EZ-16), Hängeleuchte nur über dem Tisch (LI-08),
+mehrere niedrige Lichtquellen mit 2700 K (LI-04, LI-02), alle fünf Elemente im Raum (GL-03).
+
+**Geld verdienen (Affiliate):** In `affiliate.json` stehen die Shops (IKEA, Galaxus, Amazon). Solange dort keine
+Partner-Kennung eingetragen ist, sind es normale Links. Mit Kennung (z. B. Amazon `tag`) oder der Deeplink-Vorlage
+eines Affiliate-Netzwerks werden daraus Partner-Links, und die Einkaufsliste kennzeichnet sie automatisch als
+**Werbelink**. In `produkte.json` kannst du bei jedem Eintrag unter `link` ein bestimmtes Produkt verlinken.
+
+**Ehrliche Grenzen:**
+- Das Bild ist eine maßstabsgetreue **3D-Skizze im Foto**, kein Foto-Realismus. `KI_BILD = True` versucht zusätzlich
+  ein realistischeres Bild mit generativer KI (`fengshui/realistisch.py`, braucht GPU, **experimentell und nicht
+  automatisch getestet**).
+- Ohne eigenes Produkt unter `link` führen die Links zur **Shop-Suche** nach einem passenden Produkt-Typ.
+  Die Preise sind **geschätzte Richtpreise**, keine Live-Preise.
+- Getestet ist die Funktion an einem **nachgebauten** leeren Zimmer (`fengshui/demo_zimmer.py`), nicht an echten Fotos.
+  Bei echten Fotos gelten die Grenzen der Vermessung (±10–20 cm).
+
 ## In Google Colab nutzen (ohne Installation)
 
 Oben auf **Open in Colab** klicken und die Zellen von oben nach unten ausführen.
@@ -39,6 +83,7 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 | 🪄 | `foto_korrigieren.py` → Run | **Foto rein → dasselbe Foto mit korrigierten Möbeln raus** (nur Problem-Möbel werden minimal verschoben) |
 | ✨ | `zimmer_aus_foto.py` → Run | **Zimmer aus einem Foto vermessen** – keine Meter eintippen: Raummaße, Tür/Fenster, Möbelpositionen → Bewertung + Optimierung |
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
+| 🛋 | `zimmer_einrichten.py` → Run | **Leeres Zimmer → eingerichtetes Foto + Einkaufsliste mit Shop-Links** (Möbel und Deko nach der Regelbasis) |
 | ⬆ | `push.py` → Run | Änderungen mit GitHub synchronisieren: holt erst die Änderungen deines Teams, dann Commit + Push |
 | – | `regeln_exportieren.py` | schreibt die gesamte Regelbasis als `regelbasis.md` / `regelbasis.json` |
 
@@ -70,6 +115,11 @@ fengshui/
   ml.py            Personalisierung: nicht-negative Ridge-Regression lernt Regelgewichte aus deinen Noten;
                    exportiere_datensatz() erzeugt CSV-Trainingsdaten für eigene Modelle
   visualisierung.py Grundriss mit Türaufschlag, Chi-Bahnen (orange), Balken, Personenpunkt (grün)
+  einrichten.py    Leeres Zimmer einrichten: Auswahl nach Buchregeln → Optimierer → Bild → Einkaufsliste
+  katalog.py       Produktkatalog (produkte.json), Shop-/Affiliate-Links (affiliate.json), Einkaufsliste als HTML
+  render3d.py      Möbel als 3D-Modelle perspektivisch ins Foto zeichnen (z-Buffer, Schatten, Lampenschein)
+  demo_zimmer.py   nachgebautes leeres Zimmer (Bild + Tiefenkarte) zum Ausprobieren und Testen ohne KI-Modelle
+  realistisch.py   optional/experimentell: KI-Bild mit Stable Diffusion + ControlNet (Tiefe)
 ```
 
 ## Wie die Regelbasis rechnet

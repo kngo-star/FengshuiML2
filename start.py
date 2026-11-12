@@ -10,6 +10,11 @@ In PyCharm: Rechtsklick auf start.py → Run 'start'. Danach einfach Fotos in de
   4. verschiebt nur diese – so wenig wie möglich,
   5. legt das korrigierte Foto in `fotos_raus` und öffnet es direkt.
 
+NEU – leeres Zimmer: Sind auf dem Foto keine Möbel, richtet das Programm den Raum ein
+(Möbel + Deko nach der Regelbasis) und schreibt eine Einkaufsliste mit Shop-Links.
+Welcher Raum es werden soll, steht unten bei LEERES_ZIMMER_WIRD – oder im Dateinamen,
+z. B. `wohnzimmer_leer.jpg`, `buero.jpg`, `esszimmer_neu.heic`.
+
 Es läuft weiter und wartet auf neue Fotos, bis du oben auf ■ (Stop) klickst.
 Erlaubt: .jpg, .jpeg, .png, .heic (iPhone), .tiff, .webp, .bmp. Fotos bleiben auf deinem Computer (nicht auf GitHub).
 """
@@ -24,6 +29,11 @@ AUSGANG = "fotos_raus"
 ENDUNGEN = (".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp", ".tif", ".tiff", ".bmp")
 AUTOMATISCH_OEFFNEN = True
 WARTEN_SEKUNDEN = 2
+
+# Leeres Zimmer einrichten (siehe zimmer_einrichten.py für alle Einstellungen)
+LEERES_ZIMMER_WIRD = "schlafzimmer"   # schlafzimmer | wohnzimmer | esszimmer | buero | kinderzimmer | studio
+STIL = "natur"                        # natur | hell | dunkel
+BUDGET = "mittel"                     # guenstig | mittel | gehoben
 
 # Optional: Angaben, die man auf dem Foto nicht sieht – dann prüft die Regelbasis auch diese Buchregeln.
 # Weglassen oder auf None setzen, was du nicht weißt. Alle Schlüssel: siehe mein_zimmer.py → PROFIL.
@@ -54,10 +64,35 @@ def oeffnen(pfad: str) -> None:
 
 def erledigt(stamm: str) -> bool:
     return any(os.path.exists(os.path.join(AUSGANG, f"{stamm}{e}"))
-               for e in ("_korrigiert.jpg", "_FEHLER.txt"))
+               for e in ("_korrigiert.jpg", "_einkaufsliste.html", "_FEHLER.txt"))
+
+
+def raumtyp_aus_dateiname(name: str) -> str:
+    """`wohnzimmer_leer.jpg` → wohnzimmer. Steht kein Raumtyp im Namen, gilt LEERES_ZIMMER_WIRD."""
+    n = name.lower().replace("ü", "ue").replace("ä", "ae")
+    for rt in ("schlafzimmer", "gaestezimmer", "kinderzimmer", "wohnzimmer", "esszimmer", "buero", "studio"):
+        if rt in n:
+            return rt
+    return LEERES_ZIMMER_WIRD
+
+
+def richte_leeres_zimmer_ein(pfad: str, v, start: float) -> None:
+    from fengshui.einrichten import zimmer_einrichten
+    from fengshui.ml import Personalisierung
+
+    raumtyp = raumtyp_aus_dateiname(os.path.basename(pfad))
+    print(f"   Keine Möbel im Foto – ich richte den Raum als {raumtyp} ein …")
+    r = zimmer_einrichten(pfad, raumtyp, STIL, BUDGET, ausgabe_ordner=AUSGANG, gewichte=Personalisierung().gewichte,
+                          vermessung=v, ausgabe=False)
+    e = r["einrichtung"]
+    raum = e.layout.raum
+    print(f"   Raum: ca. {raum.breite:.1f} × {raum.tiefe:.1f} m – fertig in {time.time() - start:.0f} s\n")
+    print("\n".join("   " + z for z in e.text().splitlines()))
+    oeffnen(os.path.abspath(r["dateien"]["einkaufsliste.html"]))
 
 
 def verarbeite(pfad: str) -> None:
+    from fengshui.foto3d import zimmer_aus_foto
     from fengshui.foto_korrektur import foto_korrigieren
     from fengshui.ml import Personalisierung
 
@@ -65,8 +100,12 @@ def verarbeite(pfad: str) -> None:
     print(f"\n📷 {os.path.basename(pfad)} – wird analysiert …")
     start = time.time()
     try:
+        v, erk, _ = zimmer_aus_foto(pfad, "auto")
+        if not any(not m.ist_wandobjekt and not m.ist_deckenobjekt for m in v.layout.moebel):
+            richte_leeres_zimmer_ein(pfad, v, start)          # leeres Zimmer → einrichten + Einkaufsliste
+            return
         r = foto_korrigieren(pfad, "auto", ausgabe_ordner=AUSGANG, gewichte=Personalisierung().gewichte, profil=PROFIL,
-                             zeigen=False)
+                             zeigen=False, vermessung=(v, erk))
     except Exception as fehler:
         text = (f"Das Foto konnte nicht ausgewertet werden:\n{fehler}\n\n"
                 "Tipps: aus einer Zimmerecke diagonal fotografieren, Weitwinkel (0,5×), Boden und mindestens "
