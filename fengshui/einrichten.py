@@ -30,8 +30,8 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from .bewertung import Ergebnis, bewerte
-from .katalog import (ELEMENT_NAME, STILE, Position, Produkt, einkaufsliste_daten, einkaufsliste_html,
-                      einkaufsliste_text, hex_zu_rgb, lade_produkte, lade_shops)
+from .katalog import (ELEMENT_NAME, STILE, Position, Produkt, bild_als_daten, einkaufsliste_daten,
+                      einkaufsliste_html, einkaufsliste_text, hex_zu_rgb, lade_produkte, lade_shops)
 from .modell import VEKTOR_WAND, Bewohner, Layout, Moebel
 from .optimierer import kinder_platzieren, optimiere
 
@@ -508,12 +508,15 @@ def richte_foto_ein(rgb, v, raumtyp: str = "schlafzimmer", stil: str = "natur", 
                ("Raumfläche", f"{raum.breite * raum.tiefe:.0f} m²")]
     seite = einkaufsliste_html(
         e.positionen, shops, stil, budget, titel, unter,
-        bilder=[(os.path.basename(d["vorher.jpg"]), "Vorher: das leere Zimmer"),
-                (os.path.basename(d["eingerichtet_nummern.jpg"]), "Nachher: Nummern = Einkaufsliste"),
-                (os.path.basename(d["grundriss.png"]), "Grundriss mit denselben Nummern")],
+        bilder=[(bild_als_daten(d["vorher.jpg"]), "Vorher: das leere Zimmer"),
+                (bild_als_daten(d["eingerichtet_nummern.jpg"]), "Nachher: Nummern = Einkaufsliste"),
+                (bild_als_daten(d["grundriss.png"]), "Grundriss mit denselben Nummern")],
         kacheln=kacheln, elemente={el: e.elemente.get(el, []) for el in ELEMENTE}, hinweise=e.hinweise)
     with open(d["einkaufsliste.html"], "w", encoding="utf-8") as f:
         f.write(seite)
+    liste_eingebettet = einkaufsliste_html(          # dieselbe Liste ohne Bilder, für die Web-Oberfläche
+        e.positionen, shops, stil, budget, "", "", kacheln=kacheln,
+        elemente={el: e.elemente.get(el, []) for el in ELEMENTE}, hinweise=e.hinweise, eingebettet=True)
     with open(d["einkaufsliste.txt"], "w", encoding="utf-8") as f:
         f.write(e.text(shops))
     with open(d["einkaufsliste.json"], "w", encoding="utf-8") as f:
@@ -535,6 +538,7 @@ def richte_foto_ein(rgb, v, raumtyp: str = "schlafzimmer", stil: str = "natur", 
         except Exception as fehler:       # das KI-Bild ist ein Extra – der Rest ist schon gespeichert
             print(f"  (KI-Bild nicht erzeugt: {fehler.__class__.__name__}: {fehler})")
     return {"einrichtung": e, "bild": r["bild"], "bild_nummern": mit_nummern, "foto": r["foto"],
+            "liste_html": liste_eingebettet,
             "tiefe": r["tiefe"], "maske": r["maske"], "vermessung": v, "dateien": d,
             "raumtyp": raum.raumtyp}
 

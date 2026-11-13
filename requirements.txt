@@ -1,4 +1,6 @@
 matplotlib>=3.5
+# Web-Oberfläche (app.py):
+gradio>=6
 numpy>=1.21
 # Gradient Boosting (surrogat_trainieren.py):
 scikit-learn>=1.3

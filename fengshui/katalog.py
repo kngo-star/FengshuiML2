@@ -220,7 +220,7 @@ _CSS = """
 :root{--bg:#f6f3ee;--karte:#fffdf9;--text:#26221d;--leise:#6f675c;--linie:#e2dccf;--akzent:#7a5c3a;--gruen:#4f7a55}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);
 font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-.seite{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
+.seite{max-width:1080px;margin:0 auto;padding:28px 18px 60px;color:var(--text)}
 h1{font-size:28px;margin:0 0 4px}h2{font-size:20px;margin:34px 0 12px}
 .unter{color:var(--leise);margin:0 0 22px}
 .bilder{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
@@ -250,18 +250,61 @@ padding:12px 16px;font-size:14px;margin:10px 0}.hinweis ul{margin:6px 0 0;paddin
 """
 
 
+def _css_eingebettet(css: str, wurzel: str = ".fsl") -> str:
+    """Dieselben Stile, aber nur innerhalb von <div class="fsl"> gültig (für die Web-Oberfläche app.py)."""
+    aus, i, n = [], 0, len(css)
+    while i < n:
+        auf = css.find("{", i)
+        if auf < 0:
+            break
+        sel = css[i:auf].strip()
+        if sel.startswith("@"):                      # @media(...){ innere Regeln }
+            tiefe, j = 1, auf + 1
+            while tiefe and j < n:
+                tiefe += {"{": 1, "}": -1}.get(css[j], 0)
+                j += 1
+            aus.append(sel + "{" + _css_eingebettet(css[auf + 1:j - 1], wurzel) + "}")
+            i = j
+            continue
+        zu = css.find("}", auf)
+        teile = []
+        for t in sel.split(","):
+            t = t.strip()
+            teile.append(wurzel if t in (":root", "body") else f"{wurzel} {t}")
+        aus.append(",".join(teile) + css[auf:zu + 1])
+        i = zu + 1
+    return "".join(aus)
+
+
+def bild_als_daten(pfad: str) -> str:
+    """Bild direkt in die HTML-Seite einbetten – dann funktioniert die Seite auch allein (Download, Mail)."""
+    import base64
+    typ = "png" if pfad.lower().endswith(".png") else "jpeg"
+    with open(pfad, "rb") as f:
+        return f"data:image/{typ};base64," + base64.b64encode(f.read()).decode()
+
+
 def einkaufsliste_html(positionen: list[Position], shops: dict, stil: str, budget: str, titel: str,
                        untertitel: str = "", bilder: Optional[list[tuple[str, str]]] = None,
                        kacheln: Optional[list[tuple[str, str]]] = None, elemente: Optional[dict] = None,
-                       hinweise: Optional[list[str]] = None) -> str:
-    """Eine einzelne HTML-Seite: Vorher/Nachher-Bilder, nummerierte Produkte mit Begründung und Shop-Links."""
+                       hinweise: Optional[list[str]] = None, eingebettet: bool = False) -> str:
+    """Eine einzelne HTML-Seite: Vorher/Nachher-Bilder, nummerierte Produkte mit Begründung und Shop-Links.
+
+    eingebettet=True: nur ein <div> (ohne <html>/<body>) für die Web-Oberfläche app.py.
+    """
     e = html.escape
     daten = einkaufsliste_daten(positionen, shops, stil, budget)
     partner = any(l["partnerlink"] for d in daten for l in d["links"])
-    t = [f"<!DOCTYPE html><html lang='de'><head><meta charset='utf-8'>",
-         "<meta name='viewport' content='width=device-width,initial-scale=1'>",
-         f"<title>{e(titel)}</title><style>{_CSS}</style></head><body><div class='seite'>",
-         f"<h1>{e(titel)}</h1><p class='unter'>{e(untertitel)}</p>"]
+    if eingebettet:
+        t = [f"<style>{_css_eingebettet(_CSS)}</style><div class='fsl'><div class='seite'>"]
+    else:
+        t = [f"<!DOCTYPE html><html lang='de'><head><meta charset='utf-8'>",
+             "<meta name='viewport' content='width=device-width,initial-scale=1'>",
+             f"<title>{e(titel)}</title><style>{_CSS}</style></head><body><div class='seite'>"]
+    if titel:
+        t.append(f"<h1>{e(titel)}</h1>")
+    if untertitel:
+        t.append(f"<p class='unter'>{e(untertitel)}</p>")
     if bilder:
         t.append("<div class='bilder'>")
         for datei, text in bilder:
@@ -311,5 +354,5 @@ def einkaufsliste_html(positionen: list[Position], shops: dict, stil: str, budge
                  "Partner-Kennungen trägst du in <code>affiliate.json</code> ein.</div>")
     t.append("<p class='unter' style='margin-top:26px'>Die Einrichtung folgt Feng-Shui-Regeln (Form-Schule). "
              "Das ist ein Gestaltungs-Regelwerk, keine wissenschaftlich belegte Wirkung.</p>")
-    t.append("</div></body></html>")
+    t.append("</div></div>" if eingebettet else "</div></body></html>")
     return "\n".join(t)

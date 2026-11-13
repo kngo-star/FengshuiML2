@@ -17,6 +17,18 @@ einrichtet (Form-Schule: Kommandoposition, Chi-Fluss, fünf Elemente).
 Der Raumtyp (Schlafzimmer, Wohnzimmer, Büro, Küche, Bad …) wird **automatisch erkannt**.
 Fotos bleiben auf deinem Computer – `fotos_rein/` und `fotos_raus/` werden nicht zu GitHub hochgeladen.
 
+## 🌿 Web-Oberfläche (`app.py`) – am einfachsten
+
+Rechtsklick auf **`app.py` → Run 'app'**. Im Browser öffnet sich eine Seite (http://127.0.0.1:7860) mit zwei Bereichen:
+
+- **🛋 Leeres Zimmer einrichten:** Foto hochladen, Raumtyp, Stil und Budget wählen, klicken → Vorher/Nachher,
+  Grundriss und Einkaufsliste mit Shop-Links. Ohne Foto: „Demo-Zimmer ausprobieren“.
+- **🪄 Zimmer verbessern:** Foto eines eingerichteten Zimmers → Score, korrigiertes Foto, ausführliche Analyse.
+
+Ergebnisse liegen auch in `ausgabe/app/<Datum-Uhrzeit>/`. Mit `TEILEN = True` oben in `app.py` gibt es einen
+öffentlichen Link (72 h gültig), z. B. für die Präsentation – gerechnet wird dann trotzdem auf deinem Computer.
+Benötigt `pip install "gradio>=6"` (steht in `requirements.txt`).
+
 ## 🛋 Leeres Zimmer einrichten + Einkaufsliste (`zimmer_einrichten.py`)
 
 **Foto eines leeren Raums rein → eingerichtetes Zimmer mit Möbeln und Deko raus, dazu eine Einkaufsliste
@@ -83,6 +95,7 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 | 🪄 | `foto_korrigieren.py` → Run | **Foto rein → dasselbe Foto mit korrigierten Möbeln raus** (nur Problem-Möbel werden minimal verschoben) |
 | ✨ | `zimmer_aus_foto.py` → Run | **Zimmer aus einem Foto vermessen** – keine Meter eintippen: Raummaße, Tür/Fenster, Möbelpositionen → Bewertung + Optimierung |
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
+| 🌿 | `app.py` → Run | **Web-Oberfläche im Browser**: Foto hochladen, klicken – leeres Zimmer einrichten oder Zimmer verbessern |
 | 🛋 | `zimmer_einrichten.py` → Run | **Leeres Zimmer → eingerichtetes Foto + Einkaufsliste mit Shop-Links** (Möbel und Deko nach der Regelbasis) |
 | ⬆ | `push.py` → Run | Änderungen mit GitHub synchronisieren: holt erst die Änderungen deines Teams, dann Commit + Push |
 | – | `regeln_exportieren.py` | schreibt die gesamte Regelbasis als `regelbasis.md` / `regelbasis.json` |
