@@ -15,7 +15,7 @@ einrichtet (Form-Schule: Kommandoposition, Chi-Fluss, fünf Elemente).
 | davon automatisch geprüft (Grundriss, Foto oder Profil) | 219 |
 | geometrische Prüfungen (`fengshui/regeln.py`) | 81 = 77 aus dem Buch + 4 Menschenverstand (H08–H11) |
 | Foto-Prüfungen (`fengshui/foto.py`) | F01–F19 |
-| Tests (`tests_ausfuehren.py`) | 55 |
+| Tests (`tests_ausfuehren.py`) | 65 |
 
 Die Zahlen in den Abschnitten „Version 2 … 7“ weiter unten beschreiben den Stand der jeweiligen Version.
 
@@ -120,6 +120,8 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
 | 🌿 | `app.py` → Run | **Web-Oberfläche im Browser**: Foto hochladen, klicken – leeres Zimmer einrichten oder Zimmer verbessern |
 | 🛋 | `zimmer_einrichten.py` → Run | **Leeres Zimmer → eingerichtetes Foto + Einkaufsliste mit Shop-Links** (Möbel und Deko nach der Regelbasis) |
+| ⚖ | `regelkonflikte.py` → Run | Welche Buchregeln blockieren sich in deinem Zimmer, welche scheitern am Raum? + Obergrenze für den Score |
+| 🆚 | `paarvergleich.py` | Studie „Welches Zimmer gefällt dir besser?“: Bogen erstellen, Antworten sammeln, mit Bradley-Terry auswerten |
 | ⬆ | `push.py` → Run | Änderungen mit GitHub synchronisieren: holt erst die Änderungen deines Teams, dann Commit + Push |
 | – | `regeln_exportieren.py` | schreibt die gesamte Regelbasis als `regelbasis.md` / `regelbasis.json` |
 
@@ -335,3 +337,42 @@ Nutzentest (Vorauswahl aus 2000 Kandidaten). Ergebnis: `auswertung/surrogat_beri
 | Lineare Regression | 3,51 | 0,62 |
 | Random Forest | 1,71 | 0,90 |
 | **Gradient Boosting** | **1,18** | **0,95** |
+
+## ⚖ Regelkonflikte · 🆚 Paarvergleichs-Studie (Version 8)
+
+**Warum nur ~61 von 100 Punkten?** `regelkonflikte.py` (ca. 2 min) untersucht jede Regel, die im besten Grundriss
+noch verletzt ist, mit zwei Experimenten: *allein* (nur diese Regel zählt – ist sie dann erfüllbar?) und
+*erzwingen* (zählt 5-fach – welche anderen Regeln werden dafür schlechter?). Ergebnis für `mein_zimmer.py`
+(`auswertung/regelkonflikte.md`):
+
+| Ursache | Regeln |
+|---|---|
+| **Raum** – auch allein nicht erfüllbar | C01 Chi-Bahn Tür ↔ Fenster, C02 Spiegel, L03 Ecken beleuchten |
+| **Konflikt** im Buch | K06 Abstand zur Tür und C05 Zonen ↔ K02 Kein Fenster im Rücken (+ C09, C03); K16 Bett zentral ↔ K01, K03, C02 |
+
+Die Obergrenze für dieses Zimmer liegt bei etwa **83 Punkten**; der beste Grundriss (61) erreicht davon 74 %.
+Ein Score sollte darum immer relativ zum Bestwert desselben Zimmers gelesen werden (`relativer_score()`).
+
+**Achtung Zufall:** Der Optimierer landet je nach Startwert in verschiedenen Lösungen. Mit der Einstellung aus
+`main.py` (6 Neustarts × 3000 Schritte) kamen bei 8 verschiedenen Seeds 53–61 Punkte heraus; einzelne Läufe
+streuen von ~36 bis 61. Für wichtige Ergebnisse `NEUSTARTS` erhöhen oder mehrmals laufen lassen.
+
+**Paarvergleich statt Noten:** Die Noten aus Runde 1–2 widersprachen sich. Menschen vergleichen zwei Zimmer viel
+zuverlässiger, als sie Noten vergeben. Ablauf:
+
+1. `python paarvergleich.py erstellen runde4` – für Runde 3 schon erledigt: **`ausgabe/runde3_bogen.html`**
+   (eine Datei, läuft offline im Browser und auf dem Handy, ca. 5 Minuten: 15 Paare + 2 Wiederholungen
+   zur Kontrolle). Einfach per Mail/Chat verschicken.
+2. Am Ende zeigt der Bogen einen Code (`PV1|runde3|KN~etwas|3-1,2=5,…`), den die Person zurückschickt.
+   `python paarvergleich.py hinzufuegen "<Code>"` speichert ihn in `daten/runde3_paarvergleich.txt`.
+3. `python paarvergleich.py auswerten runde3` → `auswertung/paarvergleich_runde3.md` + Grafik:
+   - **Bradley-Terry-Modell:** Beliebtheit jedes Zimmers mit 95-%-Intervall (Bootstrap über Personen)
+   - **Trefferquote der Regeln:** Wie oft gewinnt das Zimmer mit dem höheren Buch-Score? (50 % = Zufall)
+   - Konsistenz (wiederholte Paare) und Einigkeit zwischen Personen
+   - **Machine Learning:** logistisches Modell mit Gewichten ≥ 0 – welche Regeln erklären die Entscheidungen?
+     Geprüft mit Leave-one-person-out gegen die Buch-Gewichte. Wird nur berichtet; die Regeln bleiben, wie sie sind.
+
+**Wie viele Personen?** `python paarvergleich.py planung`: Stimmen die Regeln in 65 % der Fälle mit dem Gefühl
+überein, reichen etwa 10 Personen; bei nur 60 % braucht es 15–20. Weil echte Personen verschieden ticken,
+lieber **20 Personen** einplanen. Bitte Kürzel statt Namen verwenden – die Antwortdatei kommt auf GitHub.
+

@@ -16,11 +16,11 @@ if PROJEKT not in sys.path:
     sys.path.insert(0, PROJEKT)
 os.chdir(PROJEKT)                                   # Tests lesen Dateien wie produkte.json relativ zum Projekt
 
-from tests import test_einrichten, test_regeln  # noqa: E402
+from tests import test_einrichten, test_regeln, test_studie  # noqa: E402
 
 
 def main():
-    tests = [(n, f) for modul in (test_regeln, test_einrichten)
+    tests = [(n, f) for modul in (test_regeln, test_einrichten, test_studie)
              for n, f in vars(modul).items() if n.startswith("test_") and callable(f)]
     ok, fehler = 0, []
     start = time.time()

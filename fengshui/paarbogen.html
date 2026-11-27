@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feng-Shui-Paarvergleich</title>
+<style>
+  :root { --gruen: #2f7d55; --grau: #666; --hell: #f4f6f4; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: var(--hell); color: #222; }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 1.4rem; margin: 8px 0 4px; }
+  p { line-height: 1.45; }
+  .karte { background: #fff; border-radius: 10px; padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .paar { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  @media (max-width: 700px) { .paar { grid-template-columns: 1fr; } }
+  .seite { background: #fff; border: 3px solid transparent; border-radius: 10px; padding: 8px; cursor: pointer; text-align: center; }
+  .seite:hover { border-color: var(--gruen); }
+  .seite img { width: 100%; height: auto; display: block; }
+  .seite b { display: block; margin-top: 6px; font-size: 1.05rem; }
+  .knoepfe { display: flex; gap: 10px; justify-content: center; margin: 14px 0 4px; flex-wrap: wrap; }
+  button { font: inherit; padding: 10px 18px; border-radius: 8px; border: 1px solid #bbb; background: #fff; cursor: pointer; }
+  button.haupt { background: var(--gruen); color: #fff; border-color: var(--gruen); }
+  button:disabled { opacity: .5; cursor: default; }
+  input, textarea { font: inherit; padding: 8px; border: 1px solid #bbb; border-radius: 6px; width: 100%; }
+  .fortschritt { height: 6px; background: #ddd; border-radius: 3px; overflow: hidden; margin: 8px 0; }
+  .fortschritt div { height: 100%; background: var(--gruen); width: 0; transition: width .2s; }
+  .klein { color: var(--grau); font-size: .9rem; }
+  code.antwort { display: block; word-break: break-all; background: var(--hell); padding: 10px; border-radius: 6px; font-size: .9rem; }
+  .versteckt { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Welches Zimmer gefällt dir besser?</h1>
+  <p class="klein">Runde <span id="runde"></span> · etwa 5 Minuten · alles bleibt in diesem Browser, bis du den Code am Ende selbst weitergibst.</p>
+
+  <section id="start" class="karte">
+    <p>Du siehst gleich zwei Grundrisse desselben Zimmers nebeneinander (von oben, die Tür ist eingezeichnet).
+       Klick auf den Grundriss, in dem du dich <b>wohler fühlen</b> würdest – ganz nach Gefühl, du musst kein
+       Feng Shui kennen. Wenn dir beide gleich gut gefallen, nimm „Egal“.</p>
+    <p class="klein">Am Computer geht es auch mit der Tastatur: <b>←</b> linkes Zimmer, <b>→</b> rechtes Zimmer, <b>↓</b> egal.</p>
+    <label>Dein Kürzel (z. B. Initialen – bitte keinen vollen Namen):
+      <input id="kuerzel" maxlength="12" placeholder="z. B. KN" autocomplete="off"></label>
+    <p><label>Kennst du dich mit Feng Shui aus?
+      <select id="vorwissen"><option value="nein">nein</option><option value="etwas">etwas</option><option value="gut">gut</option></select>
+    </label></p>
+    <div class="knoepfe"><button class="haupt" id="los">Los geht's</button></div>
+  </section>
+
+  <section id="frage" class="versteckt">
+    <div class="fortschritt"><div id="balken"></div></div>
+    <p class="klein" id="zaehler"></p>
+    <div class="paar">
+      <div class="seite" id="links"><img alt="Grundriss 1"><b>✓ Dieses Zimmer</b></div>
+      <div class="seite" id="rechts"><img alt="Grundriss 2"><b>✓ Dieses Zimmer</b></div>
+    </div>
+    <div class="knoepfe">
+      <button id="zurueck">↩ Zurück</button>
+      <button id="egal">Egal / beide gleich</button>
+    </div>
+  </section>
+
+  <section id="ende" class="karte versteckt">
+    <h2>Danke!</h2>
+    <p>Was ist dir aufgefallen? Gab es etwas, das in einem Zimmer gar nicht geht (z. B. „Schrank versperrt das Fenster“)? (freiwillig)</p>
+    <textarea id="kommentar" rows="3"></textarea>
+    <p>Bitte schick diesen Code an das Projektteam (z. B. per Chat oder Mail):</p>
+    <code class="antwort" id="code"></code>
+    <div class="knoepfe"><button class="haupt" id="kopieren">Code kopieren</button></div>
+    <p class="klein" id="kopiert"></p>
+  </section>
+</main>
+
+<script>
+const DATEN = /*DATEN*/{"runde": "demo", "bilder": {}, "anzahl": 15, "wiederholungen": 2}/*ENDE*/;
+
+const $ = id => document.getElementById(id);
+$("runde").textContent = DATEN.runde;
+const nummern = Object.keys(DATEN.bilder).map(Number).sort((a, b) => a - b);
+let plan = [], antworten = [], schritt = 0;
+
+function mischen(a) {
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function paarplan() {           // wie paarplan() in fengshui/paarvergleich.py
+  const alle = [];
+  for (let i = 0; i < nummern.length; i++)
+    for (let j = i + 1; j < nummern.length; j++) alle.push([nummern[i], nummern[j]]);
+  const paare = mischen(alle).slice(0, DATEN.anzahl).map(([a, b]) => Math.random() < .5 ? [a, b] : [b, a]);
+  const vordere = mischen(paare.slice(0, Math.max(1, Math.floor(paare.length / 2))).slice());
+  const kontrolle = vordere.slice(0, DATEN.wiederholungen).map(([a, b]) => [b, a]);
+  return paare.concat(kontrolle);
+}
+
+function zeigen() {
+  if (schritt >= plan.length) return fertig();
+  const [l, r] = plan[schritt];
+  $("links").querySelector("img").src = DATEN.bilder[l];
+  $("rechts").querySelector("img").src = DATEN.bilder[r];
+  $("zaehler").textContent = `Vergleich ${schritt + 1} von ${plan.length}`;
+  $("balken").style.width = (100 * schritt / plan.length) + "%";
+  $("zurueck").disabled = schritt === 0;
+  window.scrollTo(0, 0);
+}
+
+function antworten_mit(ergebnis) {          // 1 = links, 0 = rechts, 0.5 = egal
+  if ($("frage").classList.contains("versteckt")) return;
+  const [l, r] = plan[schritt];
+  antworten[schritt] = [l, r, ergebnis];
+  schritt++;
+  zeigen();
+}
+
+function code() {
+  const teile = antworten.map(([l, r, e]) => e === 0.5 ? `${l}=${r}` : e === 1 ? `${l}-${r}` : `${r}-${l}`);
+  const wer = ($("kuerzel").value.trim() || "anonym").replace(/[|,=\-\s]/g, "") + "~" + $("vorwissen").value;
+  let c = `PV1|${DATEN.runde}|${wer}|${teile.join(",")}`;
+  const k = $("kommentar").value.trim();
+  if (k) c += "|" + encodeURIComponent(k);
+  return c;
+}
+
+function fertig() {
+  $("frage").classList.add("versteckt");
+  $("ende").classList.remove("versteckt");
+  $("code").textContent = code();
+}
+
+$("los").onclick = () => {
+  if (!$("kuerzel").value.trim()) { $("kuerzel").focus(); $("kuerzel").placeholder = "Bitte ein Kürzel eingeben"; return; }
+  plan = paarplan(); antworten = []; schritt = 0;
+  $("start").classList.add("versteckt");
+  $("frage").classList.remove("versteckt");
+  zeigen();
+};
+$("links").onclick = () => antworten_mit(1);
+$("rechts").onclick = () => antworten_mit(0);
+$("egal").onclick = () => antworten_mit(0.5);
+$("zurueck").onclick = () => { if (schritt > 0) { schritt--; zeigen(); } };
+$("kommentar").oninput = () => { $("code").textContent = code(); };
+$("kopieren").onclick = () => {
+  const text = code();
+  const ok = () => { $("kopiert").textContent = "✓ Kopiert – jetzt einfügen und abschicken."; };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(ok, () => auswaehlen());
+  else auswaehlen();
+  function auswaehlen() {
+    const r = document.createRange(); r.selectNodeContents($("code"));
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    $("kopiert").textContent = "Code markiert – mit Strg+C / ⌘+C kopieren.";
+  }
+};
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.key === "ArrowLeft") antworten_mit(1);
+  else if (e.key === "ArrowRight") antworten_mit(0);
+  else if (e.key === "ArrowDown") antworten_mit(0.5);
+});
+</script>
+</body>
+</html>
