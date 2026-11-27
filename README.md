@@ -7,6 +7,21 @@ Regelbasis + Optimierer + Machine Learning + YOLO-Fotoanalyse
 Python-Projekt für PyCharm, das dein Zimmer automatisch nach den Feng-Shui-Regeln aus dem Buch
 einrichtet (Form-Schule: Kommandoposition, Chi-Fluss, fünf Elemente).
 
+**Auf einen Blick (aktueller Stand):**
+
+| | Anzahl |
+|---|---|
+| Buchregeln (WENN-DANN, `fengshui/buchregeln.py`) | 322 |
+| davon automatisch geprüft (Grundriss, Foto oder Profil) | 219 |
+| geometrische Prüfungen (`fengshui/regeln.py`) | 81 = 77 aus dem Buch + 4 Menschenverstand (H08–H11) |
+| Foto-Prüfungen (`fengshui/foto.py`) | F01–F19 |
+| Tests (`tests_ausfuehren.py`) | 55 |
+
+Die Zahlen in den Abschnitten „Version 2 … 7“ weiter unten beschreiben den Stand der jeweiligen Version.
+
+**Quelle der Regeln:** _Titel, Autor·in, Verlag, Jahr – bitte ergänzen._ Die Regeln sind sinngemäß und in
+eigenen Worten zusammengefasst, nicht wörtlich übernommen.
+
 ## ▶ Am einfachsten: nur ein Foto reinlegen (`start.py`)
 
 1. In PyCharm: Rechtsklick auf **`start.py`** → **Run 'start'** (einmal starten, läuft dann weiter).
@@ -27,6 +42,8 @@ Rechtsklick auf **`app.py` → Run 'app'**. Im Browser öffnet sich eine Seite (
 
 Ergebnisse liegen auch in `ausgabe/app/<Datum-Uhrzeit>/`. Mit `TEILEN = True` oben in `app.py` gibt es einen
 öffentlichen Link (72 h gültig), z. B. für die Präsentation – gerechnet wird dann trotzdem auf deinem Computer.
+⚠ Jeder, der den Link kennt, kann Fotos hochladen und Rechenzeit auf deinem Computer nutzen. Nach der Präsentation
+wieder `TEILEN = False` setzen und die App neu starten.
 Benötigt `pip install "gradio>=6"` (steht in `requirements.txt`).
 
 ## 🛋 Leeres Zimmer einrichten + Einkaufsliste (`zimmer_einrichten.py`)
@@ -80,9 +97,15 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 
 ## Installation in PyCharm
 
-1. Ordner `fengshui_zimmer` entpacken → in PyCharm **File → Open** → Ordner wählen.
+1. In PyCharm **File → New → Project from Version Control** → URL `https://github.com/kngo-star/FengshuiML2.git`
+   (oder das Repo als ZIP herunterladen, entpacken und mit **File → Open** öffnen).
 2. Python-Interpreter einrichten (Python ≥ 3.10): **Settings → Project → Python Interpreter**.
-3. Im PyCharm-Terminal: `pip install -r requirements.txt` (matplotlib + numpy).
+3. Im PyCharm-Terminal: `pip install -r requirements.txt`.
+   - Für Grundriss, Optimierer und Tests reichen `matplotlib` und `numpy`:
+     `pip install matplotlib numpy`
+   - Alles andere (scikit-learn, ultralytics, torch, transformers, gradio …) braucht man nur für
+     Gradient Boosting, Foto-Funktionen und die Web-Oberfläche. Das ist ein großer Download (mehrere GB).
+4. Prüfen, ob alles läuft: Rechtsklick auf `tests_ausfuehren.py` → **Run**.
 
 ## Benutzung
 
@@ -90,8 +113,8 @@ Das Notebook holt den Code automatisch aus diesem Repo (`QUELLE = "github"`).
 |---|---|---|
 | 1 | `mein_zimmer.py` | Maße, Türen, Fenster, Balken, Dachschräge, Möbel und dein Profil eintragen |
 | 2 | `main.py` → Run | Optimierer sucht die besten Anordnungen, druckt Bewertung und Hinweise, speichert Grundrisse in `ausgabe/` |
-| 3 | `lernen.py` → Run | **Machine Learning:** du bewertest Vorschläge mit 0–10, das Modell lernt, welche Regeln dir wichtig sind |
-| 4 | `main.py` erneut | nutzt jetzt automatisch deine gelernten Gewichte (`meine_bewertungen.json`) |
+| 3 | `lernen.py` → Run | du bewertest Vorschläge mit 0–10; die Noten **prüfen** die Regelbasis (Rangkorrelation) und zeigen, wo eine Regel fehlt (`meine_bewertungen.json`) |
+| 4 | `main.py` erneut | die Regeln bleiben gleich (`GEWICHTE_ANPASSEN = False`, siehe Version 7); nur für Experimente lassen sich Gewichte aus den Noten lernen |
 | 🪄 | `foto_korrigieren.py` → Run | **Foto rein → dasselbe Foto mit korrigierten Möbeln raus** (nur Problem-Möbel werden minimal verschoben) |
 | ✨ | `zimmer_aus_foto.py` → Run | **Zimmer aus einem Foto vermessen** – keine Meter eintippen: Raummaße, Tür/Fenster, Möbelpositionen → Bewertung + Optimierung |
 | 📷 | `foto_empfehlung.py` → Run | **Foto deines Zimmers** → YOLO erkennt Möbel → Feng-Shui-Empfehlungen + Möbelliste für den Optimierer |
@@ -119,14 +142,14 @@ Nachttische/Couchtisch/Bank hängen mit `gehoert_zu` + `seite` am Hauptmöbel un
 fengshui/
   modell.py        Raum, Oeffnung, Balken, Schraege, Moebel, Bewohner, Layout
   geometrie.py     Abstände, Sichtwinkel, Türflucht, Chi-Bahnen, Laufweg-Suche (Raster + BFS)
-  regeln.py        REGELBASIS: 37 prüfbare Regeln (hart / kommando / chi / zonen / stil)
+  regeln.py        REGELBASIS: 81 prüfbare Regeln (hart / kommando / chi / zonen / stil)
   wissen.py        Wissensbasis: 5 Elemente + Zyklen, Himmelsrichtungen, Raumprofile, Licht (Kelvin),
                    Pflanzen, Spiegel, Stauraum, Symbol-Objekte, Möbelformen
   ausstattung.py   Check für Farben, Licht, Bett, Pflanzen, Ordnung (aus dem PROFIL-Dict)
   bewertung.py     Score 0–100 + Bericht
   optimierer.py    Simulated Annealing + Hill-Climbing, mehrere Neustarts, verschiedene Varianten
-  ml.py            Personalisierung: nicht-negative Ridge-Regression lernt Regelgewichte aus deinen Noten;
-                   exportiere_datensatz() erzeugt CSV-Trainingsdaten für eigene Modelle
+  ml.py            Noten ↔ Regeln vergleichen (Rangkorrelation); optional (GEWICHTE_ANPASSEN, standardmäßig aus)
+                   lernt eine nicht-negative Ridge-Regression Regelgewichte; exportiere_datensatz() erzeugt CSV-Daten
   visualisierung.py Grundriss mit Türaufschlag, Chi-Bahnen (orange), Balken, Personenpunkt (grün)
   einrichten.py    Leeres Zimmer einrichten: Auswahl nach Buchregeln → Optimierer → Bild → Einkaufsliste
   katalog.py       Produktkatalog (produkte.json), Shop-/Affiliate-Links (affiliate.json), Einkaufsliste als HTML
@@ -260,7 +283,7 @@ Neue Regel ergänzen: einen `R(...)`-Eintrag in `buchregeln.py` hinzufügen – 
 
 | Datei | Run in PyCharm | Wofür |
 |---|---|---|
-| `tests_ausfuehren.py` | Run | **24 Tests**: Für die wichtigsten Regeln je ein Testzimmer, das laut Buch klar falsch ist, und eines, das klar richtig ist (Bett frei im Raum, Füße zur Tür, Rücken zur Tür, Fenster im Rücken, Spiegel aufs Bett …). Dazu: alle Regeln stürzen nie ab und liefern Strafen 0…1, alle Verweise der Buch-Regelbasis zeigen auf echte Prüfungen, der Optimierer schlägt den Zufall, die Korrektur macht keine Mini-Verschiebungen. |
+| `tests_ausfuehren.py` | Run | **Tests** (damals 24, heute 55 inkl. „Leeres Zimmer einrichten“): Für die wichtigsten Regeln je ein Testzimmer, das laut Buch klar falsch ist, und eines, das klar richtig ist (Bett frei im Raum, Füße zur Tür, Rücken zur Tür, Fenster im Rücken, Spiegel aufs Bett …). Dazu: alle Regeln stürzen nie ab und liefern Strafen 0…1, alle Verweise der Buch-Regelbasis zeigen auf echte Prüfungen, der Optimierer schlägt den Zufall, die Korrektur macht keine Mini-Verschiebungen. |
 | `auswertung.py` | Run (2–4 min) | Zahlen und Grafiken für den Bericht im Ordner `auswertung/`: Optimierer vs. Zufall, Minimal-Korrektur vorher/nachher, Simulationsstudie zum Präferenzlernen (virtuelle Testpersonen), Kreuzvalidierung eurer echten Bewertungen. |
 
 **Keine „Gimmick“-Änderungen mehr:** Die Foto-Korrektur (`korrigiere()` in `optimierer.py`) verlangt jetzt

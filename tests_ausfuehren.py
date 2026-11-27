@@ -4,10 +4,19 @@ Alle Tests ausführen – prüft, ob die Regeln richtig programmiert sind.
 In PyCharm: Rechtsklick auf tests_ausfuehren.py -> Run 'tests_ausfuehren'
 (Kein zusätzliches Paket nötig. Wer pytest installiert hat, kann auch `python -m pytest tests` nutzen.)
 """
+import os
+import sys
 import time
 import traceback
 
-from tests import test_einrichten, test_regeln
+# Projektordner zum Suchpfad hinzufügen – so laufen die Tests auch, wenn man sie
+# aus einem anderen Ordner startet (z. B. `python ../FengshuiML2/tests_ausfuehren.py`).
+PROJEKT = os.path.dirname(os.path.abspath(__file__))
+if PROJEKT not in sys.path:
+    sys.path.insert(0, PROJEKT)
+os.chdir(PROJEKT)                                   # Tests lesen Dateien wie produkte.json relativ zum Projekt
+
+from tests import test_einrichten, test_regeln  # noqa: E402
 
 
 def main():
